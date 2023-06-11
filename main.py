@@ -45,7 +45,7 @@ class GrayscaleImage:
     image_name: str
 
 
-def get_file_names(directory_path):
+def get_file_names(directory_path: str) -> list[str]:
     return [
         file_name
         for file_name in os.listdir(directory_path)
@@ -53,62 +53,68 @@ def get_file_names(directory_path):
     ]
 
 
-def load_grayscale_image(directory_path, image_name):
+def load_grayscale_image(directory_path: str, image_name: str) -> GrayscaleImage:
     image = cv2.imread(os.path.join(directory_path, image_name), cv2.IMREAD_GRAYSCALE)
     return GrayscaleImage(image, image_name)
 
 
-def load_grayscale_images(directory_path):
+def get_file_extension(file_path: str) -> str:
+    return os.path.splitext(file_path)[1]
+
+
+def load_grayscale_images(directory_path: str) -> list[GrayscaleImage]:
     file_names = get_file_names(directory_path)
-    image_names = filter(
-        lambda x: os.path.splitext(x)[1] in supported_types, file_names
-    )
+    image_names = filter(lambda x: get_file_extension(x) in supported_types, file_names)
     return [
         load_grayscale_image(directory_path, image_name) for image_name in image_names
     ]
 
 
-def generate_panel_blocks(image):
-    ret, thresh = cv2.threshold(image, 240, 255, cv2.THRESH_BINARY)
+def generate_background_mask(image: np.ndarray) -> np.ndarray:
+    WHITE = 255
+    LESS_WHITE = 240
+
+    ret, thresh = cv2.threshold(image, LESS_WHITE, WHITE, cv2.THRESH_BINARY)
     nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(thresh)
 
     mask = np.zeros_like(thresh)
 
-    n = 30
-    m = 1
+    max_contour_candidate_count = 30
+    guaranteed_top_contour_count = 1
 
-    if n > 1:
-        for i in np.argsort(stats[1:, 4])[::-1][:n]:
+    if max_contour_candidate_count > 1:
+        for i in np.argsort(stats[1:, 4])[::-1][:max_contour_candidate_count]:
             x, y, w, h, area = stats[i + 1]
-            if m > 0 or (w * h > area * 0.9 and w * h < area * 1.1):
-                mask[labels == i + 1] = 255
-            m -= 1
+            if guaranteed_top_contour_count > 0 or (
+                w * h > area * 0.9 and w * h < area * 1.1
+            ):
+                mask[labels == i + 1] = WHITE
+            guaranteed_top_contour_count -= 1
     else:
-        mask[labels == np.argmax(stats[1:, 4]) + 1] = 255
+        mask[labels == np.argmax(stats[1:, 4]) + 1] = WHITE
 
-    result = cv2.subtract(image, mask)
+    return mask
 
-    contours, _ = cv2.findContours(result, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+def extract_panels(image: np.ndarray, panel_contours: list[np.ndarray]) -> list[np.ndarray]:
+    PAGE_TO_PANEL_RATIO = 16
+
+    height, width = image.shape
+    image_area = width * height
+    area_threshold = image_area // PAGE_TO_PANEL_RATIO
 
     returned_panels = []
 
-    height, width = thresh.shape
-    image_area = width * height
-    area_threshold = image_area // 16
-
-    for i, contour in enumerate(contours):
+    for contour in panel_contours:
         area = cv2.contourArea(contour)
 
-        # Skip contours that are smaller than the area threshold
         if area < area_threshold:
             continue
 
         x, y, w, h = cv2.boundingRect(contour)
 
-        # Create a blank image of the same size as the original image
         panel = np.zeros_like(image)
 
-        # Draw the current contour on the blank image
         cv2.drawContours(panel, [contour], 0, (255, 255, 255), -1)
 
         panel = cv2.bitwise_and(image, image, mask=panel)
@@ -116,8 +122,18 @@ def generate_panel_blocks(image):
         fitted_panel = panel[y : y + h, x : x + w]
 
         returned_panels.append(fitted_panel)
-
+    
     return returned_panels
+
+
+def generate_panel_blocks(image: np.ndarray) -> list[np.ndarray]:
+    mask = generate_background_mask(image)
+
+    result = cv2.subtract(image, mask)
+
+    contours, _ = cv2.findContours(result, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    return extract_panels(image, contours)
 
 
 class CopyThread(QThread):
