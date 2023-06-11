@@ -93,6 +93,10 @@ def generate_background_mask(image: np.ndarray) -> np.ndarray:
     else:
         mask[labels == np.argmax(stats[1:, 4]) + 1] = WHITE
 
+    # Apply dilation to expand the white regions
+    kernel = np.ones((3, 3), np.uint8)
+    mask = cv2.dilate(mask, kernel, iterations=2)
+
     return mask
 
 
