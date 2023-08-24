@@ -240,13 +240,29 @@ def generate_panel_blocks(image: np.ndarray) -> list[np.ndarray]:
 
 
 class CopyThread(QThread):
+def extract_panels_for_image(image_path: str, output_dir: str):
     """
     Extracts panels for a single image
     """
+    image = load_grayscale_image(os.path.dirname(image_path), image_path)
+    image_name, image_ext = os.path.splitext(image.image_name)
+    for k, panel in enumerate(generate_panel_blocks(image.image)):
+        out_path = os.path.join(output_dir, f"{image_name}_{k}{image_ext}")
+        cv2.imwrite(out_path, panel)
+
+
+def extract_panels_for_images_in_folder(input_dir: str, output_dir: str):
     """
     Basically the main function of the program,
     this is written with cli usage in mind
     """
+    files = os.listdir(input_dir)
+    total_files = len(files)
+    for i, image in enumerate(tqdm(load_grayscale_images(input_dir), total=total_files)):
+        image_name, image_ext = os.path.splitext(image.image_name)
+        for k, panel in enumerate(generate_panel_blocks(image.image)):
+            out_path = os.path.join(output_dir, f"{image_name}_{k}{image_ext}")
+            cv2.imwrite(out_path, panel)
     progress_update = pyqtSignal(str)
     process_finished = pyqtSignal()
 
