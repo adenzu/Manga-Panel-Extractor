@@ -46,6 +46,9 @@ class GrayscaleImage:
 
 
 def get_file_names(directory_path: str) -> list[str]:
+    """
+    Returns the names of the files in the given directory
+    """
     return [
         file_name
         for file_name in os.listdir(directory_path)
@@ -55,14 +58,23 @@ def get_file_names(directory_path: str) -> list[str]:
 
 def load_grayscale_image(directory_path: str, image_name: str) -> GrayscaleImage:
     image = cv2.imread(os.path.join(directory_path, image_name), cv2.IMREAD_GRAYSCALE)
+    """
+    Returns a GrayscaleImage object from the given image name in the given directory
+    """
     return GrayscaleImage(image, image_name)
 
 
 def get_file_extension(file_path: str) -> str:
+    """
+    Returns the extension of the given file path
+    """
     return os.path.splitext(file_path)[1]
 
 
 def load_grayscale_images(directory_path: str) -> list[GrayscaleImage]:
+    """
+    Returns a list of GrayscaleImage objects from the images in the given directory
+    """
     file_names = get_file_names(directory_path)
     image_names = filter(lambda x: get_file_extension(x) in supported_types, file_names)
     return [
@@ -71,6 +83,9 @@ def load_grayscale_images(directory_path: str) -> list[GrayscaleImage]:
 
 
 def generate_background_mask(image: np.ndarray) -> np.ndarray:
+    """
+    Generates a mask by focusing on the largest area of white pixels
+    """
     WHITE = 255
     LESS_WHITE = 240
 
@@ -101,6 +116,12 @@ def generate_background_mask(image: np.ndarray) -> np.ndarray:
 
 
 def extract_panels(image: np.ndarray, panel_contours: list[np.ndarray]) -> list[np.ndarray]:
+    """
+    Generates a mask by focusing on the most pointy white regions
+    """
+    """
+    Extracts panels from the image using the given contours corresponding to the panels
+    """
     PAGE_TO_PANEL_RATIO = 16
 
     height, width = image.shape
@@ -132,6 +153,9 @@ def extract_panels(image: np.ndarray, panel_contours: list[np.ndarray]) -> list[
 
 def generate_panel_blocks(image: np.ndarray) -> list[np.ndarray]:
     mask = generate_background_mask(image)
+    """
+    Generates the separate panel images from the base image
+    """
 
     result = cv2.subtract(image, mask)
 
@@ -141,6 +165,13 @@ def generate_panel_blocks(image: np.ndarray) -> list[np.ndarray]:
 
 
 class CopyThread(QThread):
+    """
+    Extracts panels for a single image
+    """
+    """
+    Basically the main function of the program,
+    this is written with cli usage in mind
+    """
     progress_update = pyqtSignal(str)
     process_finished = pyqtSignal()
 
