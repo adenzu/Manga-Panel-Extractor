@@ -8,12 +8,27 @@ Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) s
 
 ## Usage
 
-1. Execute the downloaded executable.
-2. Select the input directory containing the manga page images. Each image should represent one manga page.
-3. Choose the output directory where the extracted panels will be saved.
-4. Click "Start" to initiate the panel extraction process. You can monitor the progress in the bottom left corner.
-5. To cancel the process, click "Cancel".
-6. Please note that this program is designed specifically for manga and may not work correctly with manhwas or other similar formats.
+### Executable
+
+1. [Download the latest executable](https://github.com/adenzu/Manga-Panel-Extractor/releases/tag/v1.0.0) for your operating system.
+2. Execute the downloaded executable.
+3. Select the input directory containing the manga page images. Each image should represent one manga page.
+4. Choose the output directory where the extracted panels will be saved.
+5. Click "Start" to initiate the panel extraction process. You can monitor the progress in the bottom left corner of the program window.
+6. To cancel the process, click "Cancel".
+- Please note that this program is designed specifically for manga and may not work correctly with manhwas or other similar formats.
+
+### CLI - Input and Output Directories
+
+```bash
+python main.py <input_dir> <output_dir>
+```
+
+### CLI - Single Image
+
+```bash
+python main.py <image_path>
+```
 
 ## Features
 
