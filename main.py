@@ -85,6 +85,16 @@ def load_grayscale_images(directory_path: str) -> list[GrayscaleImage]:
 
 
 def generate_background_mask(image: np.ndarray) -> np.ndarray:
+def generate_random_color() -> tuple[int, int, int]:
+    min_v = 54
+    max_v = 144
+    r = random.randint(min_v, max_v)
+    g = random.randint(min_v, max_v)
+    b = random.randint(min_v, max_v)
+    return r, g, b
+
+
+def generate_background_mask_with_area_focus(image: np.ndarray) -> np.ndarray:
     """
     Generates a mask by focusing on the largest area of white pixels
     """
