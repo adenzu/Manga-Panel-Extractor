@@ -57,10 +57,11 @@ def get_file_names(directory_path: str) -> list[str]:
 
 
 def load_grayscale_image(directory_path: str, image_name: str) -> GrayscaleImage:
-    image = cv2.imread(os.path.join(directory_path, image_name), cv2.IMREAD_GRAYSCALE)
     """
     Returns a GrayscaleImage object from the given image name in the given directory
     """
+    image = cv2.imread(os.path.join(
+        directory_path, image_name), cv2.IMREAD_GRAYSCALE)
     return GrayscaleImage(image, image_name)
 
 
@@ -76,7 +77,8 @@ def load_grayscale_images(directory_path: str) -> list[GrayscaleImage]:
     Returns a list of GrayscaleImage objects from the images in the given directory
     """
     file_names = get_file_names(directory_path)
-    image_names = filter(lambda x: get_file_extension(x) in supported_types, file_names)
+    image_names = filter(lambda x: get_file_extension(x)
+                         in supported_types, file_names)
     return [
         load_grayscale_image(directory_path, image_name) for image_name in image_names
     ]
@@ -90,7 +92,8 @@ def generate_background_mask(image: np.ndarray) -> np.ndarray:
     LESS_WHITE = 240
 
     ret, thresh = cv2.threshold(image, LESS_WHITE, WHITE, cv2.THRESH_BINARY)
-    nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(thresh)
+    nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(
+        thresh)
 
     mask = np.zeros_like(thresh)
 
@@ -219,7 +222,7 @@ def generate_background_mask_with_pointiness_focus(image: np.ndarray, debug: boo
 
         panel = cv2.bitwise_and(image, image, mask=panel)
 
-        fitted_panel = panel[y : y + h, x : x + w]
+        fitted_panel = panel[y: y + h, x: x + w]
 
         returned_panels.append(fitted_panel)
     
@@ -234,12 +237,12 @@ def generate_panel_blocks(image: np.ndarray) -> list[np.ndarray]:
 
     result = cv2.subtract(image, mask)
 
-    contours, _ = cv2.findContours(result, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
+    contours, _ = cv2.findContours(
+        result, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
     return extract_panels(image, contours)
 
 
-class CopyThread(QThread):
 def extract_panels_for_image(image_path: str, output_dir: str):
     """
     Extracts panels for a single image
@@ -263,10 +266,13 @@ def extract_panels_for_images_in_folder(input_dir: str, output_dir: str):
         for k, panel in enumerate(generate_panel_blocks(image.image)):
             out_path = os.path.join(output_dir, f"{image_name}_{k}{image_ext}")
             cv2.imwrite(out_path, panel)
+
+
+class ExtractionThread(QThread):
     progress_update = pyqtSignal(str)
     process_finished = pyqtSignal()
 
-    def __init__(self, input_dir, output_dir):
+    def __init__(self, input_dir: str, output_dir: str):
         super().__init__()
         self.input_dir = input_dir
         self.output_dir = output_dir
@@ -279,9 +285,10 @@ def extract_panels_for_images_in_folder(input_dir: str, output_dir: str):
                 return
             self.progress_update.emit(f"Processing file {i+1}/{total_files}")
             image_name, image_ext = os.path.splitext(image.image_name)
-            for j, panel in enumerate(generate_panel_blocks(image.image)):
-                out_path = os.path.join(self.output_dir, f"{image_name}_{j}{image_ext}")
-                cv2.imwrite(f"{out_path}", panel)
+            for k, panel in enumerate(generate_panel_blocks(image.image)):
+                out_path = os.path.join(
+                    self.output_dir, f"{image_name}_{k}{image_ext}")
+                cv2.imwrite(out_path, panel)
         self.process_finished.emit()
 
 
@@ -313,8 +320,8 @@ class MainWindow(QMainWindow):
         # Connect signals and slots
         self.button1.clicked.connect(self.open_directory_dialog1)
         self.button2.clicked.connect(self.open_directory_dialog2)
-        self.button3.clicked.connect(self.start_copying)
-        self.button4.clicked.connect(self.cancel_copying)
+        self.button3.clicked.connect(self.start_extracting)
+        self.button4.clicked.connect(self.cancel_extraction)
 
         self.button4.setEnabled(False)
 
@@ -331,7 +338,8 @@ class MainWindow(QMainWindow):
         file_names = get_file_names(directory)
         number_of_images = len(
             list(
-                filter(lambda x: os.path.splitext(x)[1] in supported_types, file_names)
+                filter(lambda x: os.path.splitext(x)[
+                       1] in supported_types, file_names)
             )
         )
 
@@ -355,33 +363,41 @@ class MainWindow(QMainWindow):
         height = event.size().height()
 
         self.label1.setGeometry(
-            int(width * 0.04), int(height * 0.2), int(width * 0.2), int(height * 0.1)
+            int(width * 0.04), int(height *
+                                   0.2), int(width * 0.2), int(height * 0.1)
         )
         self.textbox1.setGeometry(
-            int(width * 0.3), int(height * 0.2), int(width * 0.4), int(height * 0.1)
+            int(width * 0.3), int(height *
+                                  0.2), int(width * 0.4), int(height * 0.1)
         )
         self.button1.setGeometry(
-            int(width * 0.75), int(height * 0.2), int(width * 0.2), int(height * 0.1)
+            int(width * 0.75), int(height *
+                                   0.2), int(width * 0.2), int(height * 0.1)
         )
 
         self.label2.setGeometry(
-            int(width * 0.04), int(height * 0.5), int(width * 0.2), int(height * 0.1)
+            int(width * 0.04), int(height *
+                                   0.5), int(width * 0.2), int(height * 0.1)
         )
         self.textbox2.setGeometry(
-            int(width * 0.3), int(height * 0.5), int(width * 0.4), int(height * 0.1)
+            int(width * 0.3), int(height *
+                                  0.5), int(width * 0.4), int(height * 0.1)
         )
         self.button2.setGeometry(
-            int(width * 0.75), int(height * 0.5), int(width * 0.2), int(height * 0.1)
+            int(width * 0.75), int(height *
+                                   0.5), int(width * 0.2), int(height * 0.1)
         )
 
         self.button3.setGeometry(
-            int(width * 0.35), int(height * 0.8), int(width * 0.1), int(height * 0.1)
+            int(width * 0.35), int(height *
+                                   0.8), int(width * 0.1), int(height * 0.1)
         )
         self.button4.setGeometry(
-            int(width * 0.55), int(height * 0.8), int(width * 0.1), int(height * 0.1)
+            int(width * 0.55), int(height *
+                                   0.8), int(width * 0.1), int(height * 0.1)
         )
 
-    def start_copying(self):
+    def start_extracting(self):
         input_dir = self.textbox1.text()
         output_dir = self.textbox2.text()
 
@@ -391,21 +407,23 @@ class MainWindow(QMainWindow):
             self.button3.setEnabled(False)
             self.button4.setEnabled(True)
 
-            # Start copying thread
-            self.copy_thread = CopyThread(input_dir, output_dir)
-            self.copy_thread.progress_update.connect(self.update_progress)
-            self.copy_thread.process_finished.connect(self.copying_finished)
-            self.copy_thread.start()
+            # Start extraction thread
+            self.extraction_thread = ExtractionThread(input_dir, output_dir)
+            self.extraction_thread.progress_update.connect(
+                self.update_progress)
+            self.extraction_thread.process_finished.connect(
+                self.extracting_finished)
+            self.extraction_thread.start()
 
     def update_progress(self, text):
         # Update the progress label
         self.statusBar().showMessage(text)
 
-    def cancel_copying(self):
-        # Cancel the copying process
-        if hasattr(self, "copy_thread"):
-            self.copy_thread.requestInterruption()
-            self.copy_thread.wait()
+    def cancel_extraction(self):
+        # Cancel the extraction process
+        if hasattr(self, "extraction_thread"):
+            self.extraction_thread.requestInterruption()
+            self.extraction_thread.wait()
 
         # Reset the progress label and enable buttons
         self.update_progress("")
@@ -415,13 +433,13 @@ class MainWindow(QMainWindow):
         self.button3.setEnabled(True)
         self.button4.setEnabled(False)
 
-    def copying_finished(self):
+    def extracting_finished(self):
         self.button1.setEnabled(True)
         self.button2.setEnabled(True)
         self.button3.setEnabled(True)
         self.button4.setEnabled(False)
         self.update_progress("Finished process")
-        self.copy_thread = None
+        self.extraction_thread = None
 
 
 if __name__ == "__main__":
