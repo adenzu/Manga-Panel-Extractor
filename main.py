@@ -1,3 +1,4 @@
+import random
 import cv2
 import numpy as np
 import sys
@@ -12,6 +13,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QThread, pyqtSignal
 import os
 from dataclasses import dataclass
+from typing import Callable
+from tqdm import tqdm
 
 
 supported_types = [
@@ -84,7 +87,6 @@ def load_grayscale_images(directory_path: str) -> list[GrayscaleImage]:
     ]
 
 
-def generate_background_mask(image: np.ndarray) -> np.ndarray:
 def generate_random_color() -> tuple[int, int, int]:
     min_v = 54
     max_v = 144
@@ -128,7 +130,6 @@ def generate_background_mask_with_area_focus(image: np.ndarray) -> np.ndarray:
     return mask
 
 
-def extract_panels(image: np.ndarray, panel_contours: list[np.ndarray]) -> list[np.ndarray]:
 def generate_background_mask_with_pointiness_focus(image: np.ndarray, debug: bool = False) -> np.ndarray:
     """
     Generates a mask by focusing on the most pointy white regions
@@ -207,6 +208,12 @@ def generate_background_mask_with_pointiness_focus(image: np.ndarray, debug: boo
         cv2.destroyAllWindows()
 
     return mask
+
+
+def extract_panels(
+    image: np.ndarray,
+    panel_contours: list[np.ndarray],
+) -> list[np.ndarray]:
     """
     Extracts panels from the image using the given contours corresponding to the panels
     """
@@ -235,7 +242,7 @@ def generate_background_mask_with_pointiness_focus(image: np.ndarray, debug: boo
         fitted_panel = panel[y: y + h, x: x + w]
 
         returned_panels.append(fitted_panel)
-    
+
     return returned_panels
 
 
