@@ -116,9 +116,84 @@ def generate_background_mask(image: np.ndarray) -> np.ndarray:
 
 
 def extract_panels(image: np.ndarray, panel_contours: list[np.ndarray]) -> list[np.ndarray]:
+def generate_background_mask_with_pointiness_focus(image: np.ndarray, debug: bool = False) -> np.ndarray:
     """
     Generates a mask by focusing on the most pointy white regions
     """
+    WHITE = 255
+    LESS_WHITE = 240
+
+    ret, thresh = cv2.threshold(image, LESS_WHITE, WHITE, cv2.THRESH_BINARY)
+    nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(
+        thresh)
+
+    mask = np.zeros_like(thresh)
+    labeled_objects = np.zeros_like(image)
+
+    max_contour_candidate_count = 30
+    guaranteed_top_contour_count = 1
+
+    if max_contour_candidate_count > 1:
+        pointiness_ratios = []
+        for i in np.argsort(stats[1:, 4])[::-1][:max_contour_candidate_count]:
+            label = i + 1
+            object_pixels = np.where(labels == label, 255, 0).astype(np.uint8)
+            contours, _ = cv2.findContours(
+                object_pixels,
+                cv2.RETR_EXTERNAL,
+                cv2.CHAIN_APPROX_NONE,
+            )
+            if len(contours) > 0:
+                contour = contours[0]
+                perimeter = cv2.arcLength(contour, True)
+                epsilon = 0.01 * perimeter
+                approx = cv2.approxPolyDP(contour, epsilon, True)
+                corners = len(approx)
+
+                if perimeter > 0:
+                    pointiness_ratio = corners / perimeter
+                    pointiness_ratios.append((label, pointiness_ratio))
+
+                    # Debugging: Draw labeled object on the labeled_objects image
+                    if debug:
+                        cv2.drawContours(labeled_objects, [
+                                         contour], 0, generate_random_color(), -1)
+                        M = cv2.moments(contour)
+                        centroid_x = int(M["m10"] / M["m00"])
+                        centroid_y = int(M["m01"] / M["m00"])
+                        text = f'Label: {label}, Corner Count: {corners}, Pointiness: {pointiness_ratio:.2f}'
+                        text_size, _ = cv2.getTextSize(
+                            text, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                        text_x = centroid_x - text_size[0] // 2
+                        text_y = centroid_y + text_size[1] // 2
+                        cv2.putText(labeled_objects, text, (text_x, text_y),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, WHITE, 1, cv2.LINE_AA)
+
+        sorted_labels = sorted(pointiness_ratios, key=lambda x: x[1])
+
+        for label, pointiness_ratio in sorted_labels:
+            x, y, w, h, area = stats[label]
+            if guaranteed_top_contour_count > 0 or (
+                w * h > area * 0.9 and w * h < area * 1.1
+            ):
+                mask[labels == label] = WHITE
+            guaranteed_top_contour_count -= 1
+    else:
+        label = np.argmax(stats[1:, 4]) + 1
+        mask[labels == label] = WHITE
+
+    # Apply dilation to expand the white regions
+    kernel = np.ones((3, 3), np.uint8)
+    mask = cv2.dilate(mask, kernel, iterations=2)
+
+    # Debugging: Display the labeled objects image and the final mask
+    if debug:
+        cv2.imshow('Labeled Objects', labeled_objects)
+        cv2.imshow('Final Mask', mask)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+    return mask
     """
     Extracts panels from the image using the given contours corresponding to the panels
     """
