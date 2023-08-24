@@ -229,11 +229,11 @@ def generate_background_mask_with_pointiness_focus(image: np.ndarray, debug: boo
     return returned_panels
 
 
-def generate_panel_blocks(image: np.ndarray) -> list[np.ndarray]:
-    mask = generate_background_mask(image)
+def generate_panel_blocks(image: np.ndarray, background_generator: Callable[[np.ndarray], np.ndarray] = generate_background_mask_with_area_focus) -> list[np.ndarray]:
     """
     Generates the separate panel images from the base image
     """
+    mask = background_generator(image)
 
     result = cv2.subtract(image, mask)
 
