@@ -443,7 +443,21 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
-    sys.exit(app.exec_())
+    if len(sys.argv) == 3:
+        input_dir = sys.argv[1]
+        output_dir = sys.argv[2]
+        extract_panels_for_images_in_folder(input_dir, output_dir)
+        print("Finished process")
+    elif len(sys.argv) == 2:
+        image_path = sys.argv[1]
+        extract_panels_for_image(image_path, os.path.dirname(image_path))
+        print("Finished process")
+    elif len(sys.argv) == 1:
+        app = QApplication(sys.argv)
+        window = MainWindow()
+        window.show()
+        sys.exit(app.exec_())
+    else:
+        print("Invalid arguments")
+        print("Usage: python main.py [input_dir] [output_dir]")
+        print("Usage: python main.py [image_path]")
