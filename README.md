@@ -10,6 +10,7 @@ Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) s
 
 ### Executable
 
+0. You can check examples in advance to see if this program can help you with your images, see examples [here](INSIGHT.md).
 1. [Download the latest executable](https://github.com/adenzu/Manga-Panel-Extractor/releases/tag/v1.0.0) for your operating system.
 2. Execute the downloaded executable.
 3. Select the input directory containing the manga page images. Each image should represent one manga page.
