@@ -1,6 +1,8 @@
-images
-out
-in
+complexities.txt
+# test-out
+# test-in
+
+
 .vscode
 # Byte-compiled / optimized / DLL files
 __pycache__/
