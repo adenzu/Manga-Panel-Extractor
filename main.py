@@ -15,6 +15,7 @@ import os
 from dataclasses import dataclass
 from typing import Callable
 from tqdm import tqdm
+import numpy as np
 
 
 supported_types = [
@@ -252,12 +253,12 @@ def generate_panel_blocks(image: np.ndarray, background_generator: Callable[[np.
     """
     mask = background_generator(image)
 
-    result = cv2.subtract(image, mask)
+    page_without_background = cv2.subtract(image, mask)
 
     contours, _ = cv2.findContours(
-        result, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        page_without_background, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    return extract_panels(image, contours)
+    return [page_without_background]  # extract_panels(image, contours)
 
 
 def extract_panels_for_image(image_path: str, output_dir: str):
@@ -277,11 +278,11 @@ def extract_panels_for_images_in_folder(input_dir: str, output_dir: str):
     this is written with cli usage in mind
     """
     files = os.listdir(input_dir)
-    total_files = len(files)
-    for i, image in enumerate(tqdm(load_grayscale_images(input_dir), total=total_files)):
+    num_files = len(files)
+    for i, image in enumerate(tqdm(load_grayscale_images(input_dir), total=num_files)):
         image_name, image_ext = os.path.splitext(image.image_name)
-        for k, panel in enumerate(generate_panel_blocks(image.image)):
-            out_path = os.path.join(output_dir, f"{image_name}_{k}{image_ext}")
+        for j, panel in enumerate(generate_panel_blocks(image.image)):
+            out_path = os.path.join(output_dir, f"{image_name}_{j}{image_ext}")
             cv2.imwrite(out_path, panel)
 
 
@@ -459,17 +460,18 @@ class MainWindow(QMainWindow):
         self.extraction_thread = None
 
 
-if __name__ == "__main__":
-    if len(sys.argv) == 3:
+def main():
+    num_args = len(sys.argv)
+    if num_args == 3:
         input_dir = sys.argv[1]
         output_dir = sys.argv[2]
         extract_panels_for_images_in_folder(input_dir, output_dir)
         print("Finished process")
-    elif len(sys.argv) == 2:
+    elif num_args == 2:
         image_path = sys.argv[1]
         extract_panels_for_image(image_path, os.path.dirname(image_path))
         print("Finished process")
-    elif len(sys.argv) == 1:
+    elif num_args == 1:
         app = QApplication(sys.argv)
         window = MainWindow()
         window.show()
@@ -478,3 +480,7 @@ if __name__ == "__main__":
         print("Invalid arguments")
         print("Usage: python main.py [input_dir] [output_dir]")
         print("Usage: python main.py [image_path]")
+
+
+if __name__ == "__main__":
+    main()
