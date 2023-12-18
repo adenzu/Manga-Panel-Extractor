@@ -136,7 +136,7 @@ def generate_background_mask_with_pointiness_focus(image: np.ndarray, debug: boo
     Generates a mask by focusing on the most pointy white regions
     """
     WHITE = 255
-    LESS_WHITE = 240
+    LESS_WHITE = 250
 
     ret, thresh = cv2.threshold(image, LESS_WHITE, WHITE, cv2.THRESH_BINARY)
     nlabels, labels, stats, centroids = cv2.connectedComponentsWithStats(
@@ -214,6 +214,7 @@ def generate_background_mask_with_pointiness_focus(image: np.ndarray, debug: boo
 def extract_panels(
     image: np.ndarray,
     panel_contours: list[np.ndarray],
+    background_color: int = 255,
 ) -> list[np.ndarray]:
     """
     Extracts panels from the image using the given contours corresponding to the panels
@@ -234,7 +235,7 @@ def extract_panels(
 
         x, y, w, h = cv2.boundingRect(contour)
 
-        panel = np.zeros_like(image)
+        panel = np.zeros_like(image) + background_color
 
         cv2.drawContours(panel, [contour], 0, (255, 255, 255), -1)
 
@@ -251,14 +252,23 @@ def generate_panel_blocks(image: np.ndarray, background_generator: Callable[[np.
     """
     Generates the separate panel images from the base image
     """
-    mask = background_generator(image)
+
+    processed_image = image.copy()
+    processed_image = cv2.GaussianBlur(processed_image, (3, 3), 0)
+    processed_image = cv2.Laplacian(processed_image, -1)
+    processed_image = cv2.dilate(
+        processed_image, np.ones((5, 5), np.uint8), iterations=1)
+    processed_image = cv2.medianBlur(processed_image, 3)
+    processed_image = 255 - processed_image
+
+    mask = background_generator(processed_image)
 
     page_without_background = cv2.subtract(image, mask)
 
     contours, _ = cv2.findContours(
         page_without_background, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    return [page_without_background]  # extract_panels(image, contours)
+    return extract_panels(image, contours)
 
 
 def extract_panels_for_image(image_path: str, output_dir: str):
