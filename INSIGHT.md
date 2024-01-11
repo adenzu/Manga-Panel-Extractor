@@ -1,3 +1,7 @@
+# Note
+
+This document is currently outdated.
+
 # How It Does
 
 As of now the program basically takes the **white** background, subtracts it from the base image, finds remaining parts, and saves them into separate files in random order. Due to this basic approach there are many obstacles that this method is prone to, here are some possible things to consider:

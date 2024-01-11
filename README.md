@@ -1,6 +1,10 @@
+# Note
+
+This document is currently partially outdated.
+
 # Manga Panel Extractor
 
-A simple program that takes manga pages and outputs panels on them. The current way of working of this program was based on this [paper](based-paper.pdf). Thanks to Xufang Pang, Ying Cao, Rynson W.H. Lau, and Antoni B. Chan for their work.
+A simple program that takes manga pages and outputs panels on them. The current way of working of this program was inspired from this [paper](related-paper.pdf). Thanks to Xufang Pang, Ying Cao, Rynson W.H. Lau, and Antoni B. Chan for their work.
 
 ## Installation
 
@@ -23,14 +27,14 @@ Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) s
 ### CLI - Input and Output Directories
 
 ```bash
-python main.py <input_dir> <output_dir>
+python main.py [input_dir] [output_dir] [-s] [-f] [-g]
 ```
 
-### CLI - Single Image
-
-```bash
-python main.py <image_path>
-```
+- `[input_dir]`: Input directory.
+- `[output_dir]` (optional): Output directory.
+- `-s` or `--split-joint-panels` (optional): Split joint panels.
+- `-f` or `--fallback` (optional): Fallback to a more aggressive method if the first one fails.
+- `-g` or `--gui` (optional): Use GUI.
 
 ## Program Explanation and Examples
 

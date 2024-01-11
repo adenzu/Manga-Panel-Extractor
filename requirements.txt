@@ -3,3 +3,8 @@ opencv_python==4.7.0.72
 PyQt5==5.15.9
 PyQt5_sip==12.11.1
 tqdm==4.65.0
+argparse
+typing
+os
+sys
+dataclasses
