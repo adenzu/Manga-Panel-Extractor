@@ -331,7 +331,8 @@ def extract_panels_for_image(image_path: str, output_dir: str, fallback: bool = 
     image_path = os.path.abspath(image_path)
     image = load_grayscale_image(os.path.dirname(image_path), image_path)
     image_name, image_ext = os.path.splitext(image.image_name)
-    for k, panel in enumerate(generate_panel_blocks(image.image, split_joint_panels=split_joint_panels, fallback=fallback)):
+    panel_blocks = generate_panel_blocks(image.image, split_joint_panels=split_joint_panels, fallback=fallback)
+    for k, panel in enumerate(tqdm(panel_blocks, total=len(panel_blocks))):
         out_path = os.path.join(output_dir, f"{image_name}_{k}{image_ext}")
         cv2.imwrite(out_path, panel)
 
@@ -521,8 +522,7 @@ def main():
         if args.output_dir:
             extract_panels_for_images_in_folder(args.input_dir, args.output_dir, args.fallback, args.split_joint_panels)
         else:
-            print("Currently unavailable due to an error.")
-            # extract_panels_for_image(args.input_dir, os.path.dirname(args.input_dir), args.fallback, args.split_joint_panels)
+            extract_panels_for_image(args.input_dir, os.path.dirname(args.input_dir), args.fallback, args.split_joint_panels)
     else:
         print("Invalid arguments")
         parser.print_help()

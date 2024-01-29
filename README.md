@@ -1,10 +1,8 @@
-# Note
-
-This document is currently partially outdated.
-
 # Manga Panel Extractor
 
 A simple program that takes manga pages and outputs panels on them. The current way of working of this program was inspired from this [paper](related-paper.pdf). Thanks to Xufang Pang, Ying Cao, Rynson W.H. Lau, and Antoni B. Chan for their work.
+
+Please read [report](report.pdf) for detailed explanation of the implemented algorithm(s).
 
 ## Installation
 
@@ -19,8 +17,10 @@ Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) s
 2. Execute the downloaded executable.
 3. Select the input directory containing the manga page images. Each image should represent one manga page.
 4. Choose the output directory where the extracted panels will be saved.
-5. Click "Start" to initiate the panel extraction process. You can monitor the progress in the bottom left corner of the program window.
-6. To cancel the process, click "Cancel".
+5. You can check the checkbox named "Split Joint Panels" to split joint panels. **This slows down the process ten fold.**
+6. You can check the checkbox named "Fallback" for fallback method to be applied in case of a failed extraction.
+7. Click "Start" to initiate the panel extraction process. You can monitor the progress in the bottom left corner of the program window.
+8. To cancel the process, click "Cancel".
 
 - Please note that this program is designed specifically for manga and may not work correctly with manhwas or other similar formats.
 
@@ -30,6 +30,13 @@ Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) s
 python main.py [input_dir] [output_dir] [-s] [-f] [-g]
 ```
 
+or
+
+```bash
+python main.py [input_img_path] [-s] [-f] [-g]
+```
+
+- `[input_img_path]`: Input image path.
 - `[input_dir]`: Input directory.
 - `[output_dir]` (optional): Output directory.
 - `-s` or `--split-joint-panels` (optional): Split joint panels.
