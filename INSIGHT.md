@@ -25,6 +25,7 @@ Here you can see some examples, the order of images in each section follows the 
 - ![](/test-in/2-10-11-12.jpg)
 - ![](/test-in/9-10-11.jpg)
 - ![](/test-in/simple.jpg)
+- ![](/test-in/colored_page.jpg)
 
 ## Base Method Results
 
@@ -104,6 +105,12 @@ Here you can see some examples, the order of images in each section follows the 
 - ![](/test-out/base/simple_5.jpg)
 - ![](/test-out/base/simple_6.jpg)
 - ![](/test-out/base/simple_7.jpg)
+
+- ![](/test-out/base/colored_page_0.jpg)
+- ![](/test-out/base/colored_page_1.jpg)
+- ![](/test-out/base/colored_page_2.jpg)
+- ![](/test-out/base/colored_page_3.jpg)
+- ![](/test-out/base/colored_page_4.jpg)
 
 ## Results of Base Method with Fallback Method
 
