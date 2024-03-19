@@ -1,7 +1,7 @@
-import cv2
 import numpy as np
+import cv2
 import sys
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
     QLabel,
@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QFileDialog,
     QCheckBox,
 )
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal
 import os
 from dataclasses import dataclass
 from typing import Callable
@@ -45,7 +45,7 @@ supported_types = [
 
 
 @dataclass
-class GrayscaleImageWithFilename:
+class ImageWithFilename:
     image: np.ndarray
     image_name: str
 
@@ -63,12 +63,15 @@ def get_file_names(directory_path: str) -> list[str]:
     ]
 
 
-def load_grayscale_image(directory_path: str, image_name: str) -> GrayscaleImageWithFilename:
+def load_image(directory_path: str, image_name: str, convert_to_grayscale: bool = False) -> ImageWithFilename:
     """
-    Returns a GrayscaleImage object from the given image name in the given directory
+    Returns a ImageWithFilename object from the given image name in the given directory
     """
-    image = cv2.imread(os.path.join(directory_path, image_name), cv2.IMREAD_GRAYSCALE)
-    return GrayscaleImageWithFilename(image, image_name)
+    if convert_to_grayscale:
+        image = cv2.imread(os.path.join(directory_path, image_name), cv2.IMREAD_GRAYSCALE)
+    else:
+        image = cv2.imread(os.path.join(directory_path, image_name))
+    return ImageWithFilename(image, image_name, convert_to_grayscale)
 
 
 def get_file_extension(file_path: str) -> str:
@@ -78,13 +81,13 @@ def get_file_extension(file_path: str) -> str:
     return os.path.splitext(file_path)[1]
 
 
-def load_grayscale_images(directory_path: str) -> list[GrayscaleImageWithFilename]:
+def load_images(directory_path: str, convert_to_grayscale: bool = False) -> list[ImageWithFilename]:
     """
-    Returns a list of GrayscaleImage objects from the images in the given directory
+    Returns a list of ImageWithFilename objects from the images in the given directory
     """
     file_names = get_file_names(directory_path)
     image_names = filter(lambda x: get_file_extension(x) in supported_types, file_names)
-    return [load_grayscale_image(directory_path, image_name) for image_name in image_names]
+    return [load_image(directory_path, image_name, convert_to_grayscale) for image_name in image_names]
 
 
 def get_background_intensity_range(grayscale_image: np.ndarray, min_range: int = 1) -> tuple[int, int]:
@@ -158,7 +161,7 @@ def extract_panels(
     """
     PAGE_TO_PANEL_RATIO = 32
 
-    height, width = image.shape
+    height, width = image.shape[:2]
     image_area = width * height
     area_threshold = image_area // PAGE_TO_PANEL_RATIO
 
@@ -199,7 +202,8 @@ def generate_panel_blocks(
     Generates the separate panel images from the base image
     """
 
-    processed_image = cv2.GaussianBlur(image, (3, 3), 0)
+    grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    processed_image = cv2.GaussianBlur(grayscale_image, (3, 3), 0)
     processed_image = cv2.Laplacian(processed_image, -1)
     processed_image = cv2.dilate(processed_image, np.ones((5, 5), np.uint8), iterations=1)
     processed_image = 255 - processed_image
@@ -225,7 +229,7 @@ def generate_panel_blocks(
         up_right_diagonal_kernel = np.array([[0, 0, 0], [0, 1, 0], [1, 0, 0]], np.uint8)
         
         PAGE_TO_JOINT_OBJECT_RATIO = 3
-        image_height, image_width = image.shape
+        image_height, image_width = grayscale_image.shape
 
         height_based_size = image_height // PAGE_TO_JOINT_OBJECT_RATIO
         width_based_size = (2 * image_width) // PAGE_TO_JOINT_OBJECT_RATIO
@@ -281,8 +285,8 @@ def generate_panel_blocks(
             up_right_dilation_kernel,
         ]
 
-        def get_dots(image: np.ndarray, kernel: np.ndarray) -> tuple[np.ndarray, int]:
-            temp = cv2.matchTemplate(image, kernel, cv2.TM_CCOEFF_NORMED)
+        def get_dots(grayscale_image: np.ndarray, kernel: np.ndarray) -> tuple[np.ndarray, int]:
+            temp = cv2.matchTemplate(grayscale_image, kernel, cv2.TM_CCOEFF_NORMED)
             _, temp = cv2.threshold(temp, 0.9, 1, cv2.THRESH_BINARY)
             temp = np.where(temp == 1, 255, 0).astype(np.uint8)
             pad_height = (kernel.shape[0] - 1) // 2
@@ -302,14 +306,14 @@ def generate_panel_blocks(
 
         page_without_background = 255 - mask
     else:
-        page_without_background = cv2.subtract(image, mask)
+        page_without_background = cv2.subtract(grayscale_image, mask)
 
     contours, _ = cv2.findContours(page_without_background, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     panels = extract_panels(image, contours)
 
     if fallback and len(panels) < 2:
-        processed_image = cv2.GaussianBlur(image, (3, 3), 0)
+        processed_image = cv2.GaussianBlur(grayscale_image, (3, 3), 0)
         processed_image = cv2.Laplacian(processed_image, -1)
         _, thresh = cv2.threshold(processed_image, 8, 255, cv2.THRESH_BINARY)
         processed_image = apply_adaptive_threshold(processed_image)
@@ -329,7 +333,7 @@ def extract_panels_for_image(image_path: str, output_dir: str, fallback: bool = 
     if not os.path.exists(image_path):
         return
     image_path = os.path.abspath(image_path)
-    image = load_grayscale_image(os.path.dirname(image_path), image_path)
+    image = load_image(os.path.dirname(image_path), image_path)
     image_name, image_ext = os.path.splitext(image.image_name)
     panel_blocks = generate_panel_blocks(image.image, split_joint_panels=split_joint_panels, fallback=fallback)
     for k, panel in enumerate(tqdm(panel_blocks, total=len(panel_blocks))):
@@ -346,7 +350,7 @@ def extract_panels_for_images_in_folder(input_dir: str, output_dir: str, fallbac
         return
     files = os.listdir(input_dir)
     num_files = len(files)
-    for i, image in enumerate(tqdm(load_grayscale_images(input_dir), total=num_files)):
+    for i, image in enumerate(tqdm(load_images(input_dir), total=num_files)):
         image_name, image_ext = os.path.splitext(image.image_name)
         for j, panel in enumerate(generate_panel_blocks(image.image, fallback=fallback, split_joint_panels=split_joint_panels)):
             out_path = os.path.join(output_dir, f"{image_name}_{j}{image_ext}")
@@ -367,7 +371,7 @@ class ExtractionThread(QThread):
     def run(self):
         files = os.listdir(self.input_dir)
         total_files = len(files)
-        for i, image in enumerate(load_grayscale_images(self.input_dir)):
+        for i, image in enumerate(load_images(self.input_dir)):
             if self.isInterruptionRequested():
                 return
             self.progress_update.emit(f"Processing file {i+1}/{total_files}")
@@ -510,6 +514,7 @@ def main():
     parser.add_argument("-s", "--split-joint-panels", action="store_true", help="Split joint panels")
     parser.add_argument("-f", "--fallback", action="store_true", help="Fallback to a more aggressive method if the first one fails")
     parser.add_argument("-g", "--gui", action="store_true", help="Use GUI")
+    parser.add_argument("-v", "--version", action="version", version="Manga-Panel-Extractor v1.1.1")
 
     args = parser.parse_args()
 
@@ -517,7 +522,7 @@ def main():
         app = QApplication(sys.argv)
         window = MainWindow()
         window.show()
-        sys.exit(app.exec_())
+        sys.exit(app.exec())
     elif args.input_dir:
         if args.output_dir:
             extract_panels_for_images_in_folder(args.input_dir, args.output_dir, args.fallback, args.split_joint_panels)
