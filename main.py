@@ -63,15 +63,12 @@ def get_file_names(directory_path: str) -> list[str]:
     ]
 
 
-def load_image(directory_path: str, image_name: str, convert_to_grayscale: bool = False) -> ImageWithFilename:
+def load_image(directory_path: str, image_name: str) -> ImageWithFilename:
     """
     Returns a ImageWithFilename object from the given image name in the given directory
     """
-    if convert_to_grayscale:
-        image = cv2.imread(os.path.join(directory_path, image_name), cv2.IMREAD_GRAYSCALE)
-    else:
-        image = cv2.imread(os.path.join(directory_path, image_name))
-    return ImageWithFilename(image, image_name, convert_to_grayscale)
+    image = cv2.imread(os.path.join(directory_path, image_name))
+    return ImageWithFilename(image, image_name)
 
 
 def get_file_extension(file_path: str) -> str:
@@ -81,13 +78,13 @@ def get_file_extension(file_path: str) -> str:
     return os.path.splitext(file_path)[1]
 
 
-def load_images(directory_path: str, convert_to_grayscale: bool = False) -> list[ImageWithFilename]:
+def load_images(directory_path: str) -> list[ImageWithFilename]:
     """
     Returns a list of ImageWithFilename objects from the images in the given directory
     """
     file_names = get_file_names(directory_path)
     image_names = filter(lambda x: get_file_extension(x) in supported_types, file_names)
-    return [load_image(directory_path, image_name, convert_to_grayscale) for image_name in image_names]
+    return [load_image(directory_path, image_name) for image_name in image_names]
 
 
 def get_background_intensity_range(grayscale_image: np.ndarray, min_range: int = 1) -> tuple[int, int]:
