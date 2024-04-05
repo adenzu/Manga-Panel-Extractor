@@ -6,7 +6,7 @@ Please read [report](report.pdf) for detailed explanation of the implemented alg
 
 ## Installation
 
-Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) section of the repository and download the executable for Windows. Currently, only the Windows version is supported. However, you can build for other platforms using the provided source code.
+Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) section of the repository and download the executable for Windows. Currently, only the Windows7+ and Ubuntu versions are supported. However, you can build for other platforms using the provided source code.
 
 ## Usage
 
