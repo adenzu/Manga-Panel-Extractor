@@ -4,6 +4,8 @@ A simple program that takes manga pages and outputs panels on them. The current 
 
 Please read [report](report.pdf) for detailed explanation of the implemented algorithm(s).
 
+- Please note that this program is designed specifically for manga and may not work correctly with manhwas or other similar formats.
+
 ## Installation
 
 Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) section of the repository and download the executable for Windows. Currently, only the Windows7+ and Ubuntu versions are supported. However, you can build for other platforms using the provided source code.
