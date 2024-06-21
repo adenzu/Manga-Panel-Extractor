@@ -9,6 +9,9 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QFileDialog,
     QCheckBox,
+    QMessageBox,
+    QVBoxLayout,
+    QWidget,
 )
 from PyQt6.QtCore import QThread, pyqtSignal
 import os
@@ -392,6 +395,7 @@ class ExtractionThread(QThread):
                     cv2.imwrite(out_path, panel)
         self.process_finished.emit()
 
+
 # TODO: Clean up the GUI positioning and resizing code
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -406,12 +410,14 @@ class MainWindow(QMainWindow):
         self.outputDirectoryTextbox = QLineEdit(self)
         self.selectOutputDirectoryButton = QPushButton("Browse", self)
 
+        self.fallbackCheckbox = QCheckBox("Fallback", self)
+        self.splitJointPanelsCheckbox = QCheckBox("Split Joint Panels", self)
+        self.outputToFoldersCheckbox = QCheckBox("Output to Separate Folders", self)
+        
         self.startButton = QPushButton("Start", self)
         self.cancelButton = QPushButton("Cancel", self)
 
-        self.fallbackCheckbox = QCheckBox("Fallback", self)
-        self.splitJointPanelsCheckbox = QCheckBox("Split Joint Panels", self)
-        self.outputToFoldersCheckbox = QCheckBox("Output to Folders", self)
+        self.questionMarkButton = QPushButton("?", self)
 
         # Set widget positions and sizes
         self.inputDirectoryLabel.setGeometry(20, 20, 100, 20)
@@ -429,18 +435,43 @@ class MainWindow(QMainWindow):
         self.startButton.setGeometry(175, 160, 50, 20)
         self.cancelButton.setGeometry(275, 160, 50, 20)
 
+        self.questionMarkButton.setGeometry(20, 160, 20, 20)
+
+        # Set initial values
+        self.cancelButton.setEnabled(False)
+
+        # Set checkable properties
+        self.questionMarkButton.setCheckable(True)
 
         # Connect signals and slots
         self.selectInputDirectoryButton.clicked.connect(self.open_input_directory_dialog)
         self.selectOutputDirectoryButton.clicked.connect(self.open_output_directory_dialog)
         self.startButton.clicked.connect(self.start_extracting)
         self.cancelButton.clicked.connect(self.cancel_extraction)
-
-        self.cancelButton.setEnabled(False)
+        self.questionMarkButton.clicked.connect(self.show_explanations)
 
         # Set window properties
         self.setWindowTitle("Manga Panel Extractor")
         self.setMinimumSize(500, 200)
+
+        # Dictionary to store widget explanations
+        self.explanations = [
+            "Input Directory: The directory containing the images to extract panels from",
+            "Output Directory: The directory to save the extracted panels to",
+            "Browse Buttons: Click to select corresponding directories",
+            "Fallback Checkbox: Use a more aggressive method if the base method for panel extraction fails",
+            "Split Joint Panels Checkbox: Split joint panels into separate panels",
+            "Output to Separate Folders Checkbox: Save extracted panels to separate folders in the main output folder that are named after the input images instead of saving them directly to the main output folder",
+            "Start Button: Start the panel extraction process",
+            "Cancel Button: Cancel the panel extraction process",
+        ]
+
+        # Track currently explained widget
+        self.current_explanation_widget = None
+
+    def show_explanations(self):
+        explanation_text = "\n\n".join(self.explanations)
+        QMessageBox.information(self, "Widget Explanations", explanation_text)
 
     def open_input_directory_dialog(self):
         # Open directory selection dialog
@@ -480,6 +511,8 @@ class MainWindow(QMainWindow):
 
         self.startButton.setGeometry(int(width * 0.35), int(height * 0.8), int(width * 0.1), int(height * 0.1))
         self.cancelButton.setGeometry(int(width * 0.55), int(height * 0.8), int(width * 0.1), int(height * 0.1))
+
+        self.questionMarkButton.setGeometry(int(width * 0.9), int(height * 0.8), int(width * 0.05), int(height * 0.1))
         
     def start_extracting(self):
         input_dir = self.inputDirectoryTextbox.text()
