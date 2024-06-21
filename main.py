@@ -105,9 +105,10 @@ def is_contour_rectangular(contour: np.ndarray) -> bool:
     """
     Returns whether the given contour is rectangular or not
     """
+    num_sides = 4
     perimeter = cv2.arcLength(contour, True)
     approx = cv2.approxPolyDP(contour, 0.01 * perimeter, True)
-    return len(approx) == 4
+    return len(approx) == num_sides
 
 
 def generate_background_mask(grayscale_image: np.ndarray) -> np.ndarray:
@@ -498,7 +499,7 @@ class MainWindow(QMainWindow):
                 self.fallbackCheckbox.isChecked(), 
                 self.outputToFoldersCheckbox.isChecked()
             )
-            
+
             self.extraction_thread.progress_update.connect(self.update_progress)
             self.extraction_thread.process_finished.connect(self.extracting_finished)
             self.extraction_thread.start()
@@ -541,7 +542,7 @@ def testPerformance():
 
     print("Running performance tests")
 
-    for i in range(4):
+    for i in range(len(test_output_dirs)):
         start_time = time.time()
         files, panels = extract_panels_for_images_in_folder(test_input_dir, test_output_dirs[i], settings[i] & 0b01, settings[i] & 0b10)
         end_time = time.time()
