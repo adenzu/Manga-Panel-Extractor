@@ -382,45 +382,51 @@ class ExtractionThread(QThread):
                 cv2.imwrite(out_path, panel)
         self.process_finished.emit()
 
-
+# TODO: Clean up the GUI positioning and resizing code
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         # Create widgets
-        self.label1 = QLabel("Input Directory", self)
-        self.textbox1 = QLineEdit(self)
-        self.button1 = QPushButton("Browse", self)
-        self.label2 = QLabel("Output Directory", self)
-        self.textbox2 = QLineEdit(self)
-        self.button2 = QPushButton("Browse", self)
-        self.button3 = QPushButton("Start", self)
-        self.button4 = QPushButton("Cancel", self)
-        self.fallback_checkbox = QCheckBox("Fallback", self)
-        self.split_joint_panels_checkbox = QCheckBox("Split Joint Panels", self)
+        self.inputDirectoryLabel = QLabel("Input Directory", self)
+        self.inputDirectoryTextbox = QLineEdit(self)
+        self.selectInputDirectoryButton = QPushButton("Browse", self)
+        
+        self.outputDirectoryLabel = QLabel("Output Directory", self)
+        self.outputDirectoryTextbox = QLineEdit(self)
+        self.selectOutputDirectoryButton = QPushButton("Browse", self)
+
+        self.startButton = QPushButton("Start", self)
+        self.cancelButton = QPushButton("Cancel", self)
+
+        self.fallbackCheckbox = QCheckBox("Fallback", self)
+        self.splitJointPanelsCheckbox = QCheckBox("Split Joint Panels", self)
+        self.outputToFoldersCheckbox = QCheckBox("Output to Folders", self)
 
         # Set widget positions and sizes
-        self.label1.setGeometry(20, 40, 100, 30)
-        self.textbox1.setGeometry(130, 40, 200, 30)
-        self.button1.setGeometry(350, 40, 80, 30)
+        self.inputDirectoryLabel.setGeometry(20, 20, 100, 20)
+        self.inputDirectoryTextbox.setGeometry(150, 20, 200, 20)
+        self.selectInputDirectoryButton.setGeometry(375, 20, 100, 20)
 
-        self.label2.setGeometry(20, 90, 100, 30)
-        self.textbox2.setGeometry(130, 90, 200, 30)
-        self.button2.setGeometry(350, 90, 80, 30)
+        self.outputDirectoryLabel.setGeometry(20, 80, 100, 20)
+        self.outputDirectoryTextbox.setGeometry(150, 80, 200, 20)
+        self.selectOutputDirectoryButton.setGeometry(375, 80, 100, 20)
 
-        self.button3.setGeometry(200, 140, 80, 30)
-        self.button4.setGeometry(300, 140, 80, 30)
+        self.fallbackCheckbox.setGeometry(150, 100, 200, 20)
+        self.splitJointPanelsCheckbox.setGeometry(150, 120, 200, 20)
+        self.outputToFoldersCheckbox.setGeometry(150, 140, 200, 20)
 
-        self.fallback_checkbox.setGeometry(250, 160, 80, 30)
-        self.split_joint_panels_checkbox.setGeometry(250, 180, 80, 30)
+        self.startButton.setGeometry(175, 160, 50, 20)
+        self.cancelButton.setGeometry(275, 160, 50, 20)
+
 
         # Connect signals and slots
-        self.button1.clicked.connect(self.open_input_directory_dialog)
-        self.button2.clicked.connect(self.open_output_directory_dialog)
-        self.button3.clicked.connect(self.start_extracting)
-        self.button4.clicked.connect(self.cancel_extraction)
+        self.selectInputDirectoryButton.clicked.connect(self.open_input_directory_dialog)
+        self.selectOutputDirectoryButton.clicked.connect(self.open_output_directory_dialog)
+        self.startButton.clicked.connect(self.start_extracting)
+        self.cancelButton.clicked.connect(self.cancel_extraction)
 
-        self.button4.setEnabled(False)
+        self.cancelButton.setEnabled(False)
 
         # Set window properties
         self.setWindowTitle("Manga Panel Extractor")
@@ -436,43 +442,44 @@ class MainWindow(QMainWindow):
         self.update_progress(f"Found {number_of_images} images")
 
         # Set the text box value to the selected directory
-        self.textbox1.setText(directory)
+        self.inputDirectoryTextbox.setText(directory)
 
     def open_output_directory_dialog(self):
         # Open directory selection dialog
         directory = str(QFileDialog.getExistingDirectory(self, "Select Output Directory"))
 
         # Set the text box value to the selected directory
-        self.textbox2.setText(directory)
+        self.outputDirectoryTextbox.setText(directory)
 
     def resizeEvent(self, event):
         # Resize and center the widgets when the window is resized
         width = event.size().width()
         height = event.size().height()
 
-        self.label1.setGeometry(int(width * 0.04), int(height * 0.2), int(width * 0.2), int(height * 0.1))
-        self.textbox1.setGeometry(int(width * 0.3), int(height * 0.2), int(width * 0.4), int(height * 0.1))
-        self.button1.setGeometry(int(width * 0.75), int(height * 0.2), int(width * 0.2), int(height * 0.1))
+        self.inputDirectoryLabel.setGeometry(int(width * 0.04), int(height * 0.1), int(width * 0.2), int(height * 0.1))
+        self.inputDirectoryTextbox.setGeometry(int(width * 0.3), int(height * 0.1), int(width * 0.4), int(height * 0.1))
+        self.selectInputDirectoryButton.setGeometry(int(width * 0.75), int(height * 0.1), int(width * 0.2), int(height * 0.1))
 
-        self.label2.setGeometry(int(width * 0.04), int(height * 0.5), int(width * 0.2), int(height * 0.1))
-        self.textbox2.setGeometry(int(width * 0.3), int(height * 0.5), int(width * 0.4), int(height * 0.1))
-        self.button2.setGeometry(int(width * 0.75), int(height * 0.5), int(width * 0.2), int(height * 0.1))
+        self.outputDirectoryLabel.setGeometry(int(width * 0.04), int(height * 0.4), int(width * 0.2), int(height * 0.1))
+        self.outputDirectoryTextbox.setGeometry(int(width * 0.3), int(height * 0.4), int(width * 0.4), int(height * 0.1))
+        self.selectOutputDirectoryButton.setGeometry(int(width * 0.75), int(height * 0.4), int(width * 0.2), int(height * 0.1))
 
-        self.button3.setGeometry(int(width * 0.35), int(height * 0.8), int(width * 0.1), int(height * 0.1))
-        self.button4.setGeometry(int(width * 0.55), int(height * 0.8), int(width * 0.1), int(height * 0.1))
+        self.fallbackCheckbox.setGeometry(int(width * 0.3), int(height * 0.5), int(width * 0.4), int(height * 0.1))
+        self.splitJointPanelsCheckbox.setGeometry(int(width * 0.3), int(height * 0.6), int(width * 0.4), int(height * 0.1))
+        self.outputToFoldersCheckbox.setGeometry(int(width * 0.3), int(height * 0.7), int(width * 0.4), int(height * 0.1))
 
-        self.fallback_checkbox.setGeometry(int(width * 0.3), int(height * 0.6), int(width * 0.4), int(height * 0.1))
-        self.split_joint_panels_checkbox.setGeometry(int(width * 0.3), int(height * 0.7), int(width * 0.4), int(height * 0.1))
-
+        self.startButton.setGeometry(int(width * 0.35), int(height * 0.8), int(width * 0.1), int(height * 0.1))
+        self.cancelButton.setGeometry(int(width * 0.55), int(height * 0.8), int(width * 0.1), int(height * 0.1))
+        
     def start_extracting(self):
-        input_dir = self.textbox1.text()
-        output_dir = self.textbox2.text()
+        input_dir = self.inputDirectoryTextbox.text()
+        output_dir = self.outputDirectoryTextbox.text()
 
         if input_dir and output_dir:
-            self.button1.setEnabled(False)
-            self.button2.setEnabled(False)
-            self.button3.setEnabled(False)
-            self.button4.setEnabled(True)
+            self.selectInputDirectoryButton.setEnabled(False)
+            self.selectOutputDirectoryButton.setEnabled(False)
+            self.startButton.setEnabled(False)
+            self.cancelButton.setEnabled(True)
 
             # Start extraction thread
             self.extraction_thread = ExtractionThread(input_dir, output_dir, self.split_joint_panels_checkbox.isChecked(), self.fallback_checkbox.isChecked())
@@ -493,16 +500,16 @@ class MainWindow(QMainWindow):
         # Reset the progress label and enable buttons
         self.update_progress("")
 
-        self.button1.setEnabled(True)
-        self.button2.setEnabled(True)
-        self.button3.setEnabled(True)
-        self.button4.setEnabled(False)
+        self.selectInputDirectoryButton.setEnabled(True)
+        self.selectOutputDirectoryButton.setEnabled(True)
+        self.startButton.setEnabled(True)
+        self.cancelButton.setEnabled(False)
 
     def extracting_finished(self):
-        self.button1.setEnabled(True)
-        self.button2.setEnabled(True)
-        self.button3.setEnabled(True)
-        self.button4.setEnabled(False)
+        self.selectInputDirectoryButton.setEnabled(True)
+        self.selectOutputDirectoryButton.setEnabled(True)
+        self.startButton.setEnabled(True)
+        self.cancelButton.setEnabled(False)
         self.update_progress("Finished process")
         self.extraction_thread = None
 
