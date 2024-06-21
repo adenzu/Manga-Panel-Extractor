@@ -19,7 +19,7 @@ Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) s
 2. Execute the downloaded executable.
 3. Select the input directory containing the manga page images. Each image should represent one manga page.
 4. Choose the output directory where the extracted panels will be saved.
-5. You can check the checkbox named "Split Joint Panels" to split joint panels. **This slows down the process five fold.**
+5. You can check the checkbox named "Split Joint Panels" to split joint panels. **This slows down the process up to ten fold.**
 6. You can check the checkbox named "Fallback" for fallback method to be applied in case of a failed extraction.
 7. Click "Start" to initiate the panel extraction process. You can monitor the progress in the bottom left corner of the program window.
 8. To cancel the process, click "Cancel".
