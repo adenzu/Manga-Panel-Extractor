@@ -17,6 +17,7 @@ from typing import Callable
 from tqdm import tqdm
 import numpy as np
 import argparse
+import time
 
 
 supported_types = [
@@ -347,12 +348,15 @@ def extract_panels_for_images_in_folder(input_dir: str, output_dir: str, fallbac
         return
     files = os.listdir(input_dir)
     num_files = len(files)
-    for i, image in enumerate(tqdm(load_images(input_dir), total=num_files)):
+    num_panels = 0
+    for _, image in enumerate(tqdm(load_images(input_dir), total=num_files)):
         image_name, image_ext = os.path.splitext(image.image_name)
-        for j, panel in enumerate(generate_panel_blocks(image.image, fallback=fallback, split_joint_panels=split_joint_panels)):
+        panel_blocks = generate_panel_blocks(image.image, fallback=fallback, split_joint_panels=split_joint_panels)
+        for j, panel in enumerate(panel_blocks):
             out_path = os.path.join(output_dir, f"{image_name}_{j}{image_ext}")
             cv2.imwrite(out_path, panel)
-
+        num_panels += len(panel_blocks)
+    return (num_files, num_panels)
 
 class ExtractionThread(QThread):
     progress_update = pyqtSignal(str)
@@ -502,6 +506,25 @@ class MainWindow(QMainWindow):
         self.update_progress("Finished process")
         self.extraction_thread = None
 
+def testPerformance():
+    test_input_dir = "./test-in"
+    test_output_dirs = ["./test-out/base", "./test-out/fallback", "./test-out/split", "./test-out/split-fallback"]
+
+    settings = [0b00, 0b01, 0b10, 0b11]
+    settings_string = ["base", "fallback", "split", "split-fallback"]
+
+    files = 0
+    panels = 0
+
+    print("Running performance tests")
+
+    for i in range(4):
+        start_time = time.time()
+        files, panels = extract_panels_for_images_in_folder(test_input_dir, test_output_dirs[i], settings[i] & 0b01, settings[i] & 0b10)
+        end_time = time.time()
+
+        execution_time = end_time - start_time
+        print(f"Execution time: {execution_time} seconds for {files} files and {panels} panels with {settings_string[i]} settings")
 
 def main():
     parser = argparse.ArgumentParser(description="Extract panels from manga pages")
@@ -512,6 +535,7 @@ def main():
     parser.add_argument("-f", "--fallback", action="store_true", help="Fallback to a more aggressive method if the first one fails")
     parser.add_argument("-g", "--gui", action="store_true", help="Use GUI")
     parser.add_argument("-v", "--version", action="version", version="Manga-Panel-Extractor v1.1.1")
+    parser.add_argument("-t", "--test", action="store_true", help="Run tests")
 
     args = parser.parse_args()
 
@@ -520,6 +544,8 @@ def main():
         window = MainWindow()
         window.show()
         sys.exit(app.exec())
+    elif args.test:
+        testPerformance()
     elif args.input_dir:
         if args.output_dir:
             extract_panels_for_images_in_folder(args.input_dir, args.output_dir, args.fallback, args.split_joint_panels)
