@@ -1,5 +1,5 @@
 numpy
-opencv_python
+opencv-contrib-python
 opencv_python_headless
 PyQt6
 PyQt6_sip
