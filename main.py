@@ -454,7 +454,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Manga Panel Extractor")
         self.setMinimumSize(500, 200)
 
-        # Dictionary to store widget explanations
+        # List to store widget explanations
         self.explanations = [
             "Input Directory: The directory containing the images to extract panels from",
             "Output Directory: The directory to save the extracted panels to",
