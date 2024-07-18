@@ -1,6 +1,7 @@
 let processedImages = [];
 
 function onOpenCvReady() {
+    document.getElementById('download-button').disabled = true;
     document.getElementById('start-button').addEventListener('click', () => {
         const inputFiles = document.getElementById('input-files').files;
         const fallback = document.getElementById('fallback').checked;
@@ -25,7 +26,6 @@ function onOpenCvReady() {
             }
             reader.readAsDataURL(file);
         });
-
         // Enable download button after processing
         document.getElementById('download-button').disabled = false;
     });
@@ -80,6 +80,7 @@ function updateImageGrid() {
 
     const maxImages = 10; // Change this number to control how many images are shown
     const imagesToShow = processedImages.slice(0, maxImages);
+    const remainingImages = processedImages.length - maxImages;
 
     imagesToShow.forEach((dataUrl, index) => {
         const img = document.createElement('img');
@@ -87,6 +88,13 @@ function updateImageGrid() {
         img.addEventListener('click', () => showModal(dataUrl));
         grid.appendChild(img);
     });
+
+    if (remainingImages > 0) {
+        const moreImages = document.createElement('div');
+        moreImages.className = 'more-images';
+        moreImages.textContent = `+${remainingImages} more`;
+        grid.appendChild(moreImages);
+    }
 }
 
 function showModal(imageSrc) {
@@ -108,9 +116,13 @@ function showModal(imageSrc) {
 
 function downloadAllImages() {
     const zip = new JSZip();
+
+    document.getElementById('download-button').disabled = true;
+
     processedImages.forEach((dataUrl, index) => {
         const imgData = dataUrl.split(',')[1];
         zip.file(`image_${index + 1}.png`, imgData, { base64: true });
+        document.getElementById('download-button').textContent = `Downloading... (${index + 1}/${processedImages.length})`;
     });
 
     zip.generateAsync({ type: 'blob' }).then(function (content) {
@@ -120,5 +132,8 @@ function downloadAllImages() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }).then(() => {
+        document.getElementById('download-button').textContent = 'Download';
+        document.getElementById('download-button').disabled = false;
     });
 }

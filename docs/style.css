@@ -82,6 +82,20 @@ h1 {
     border-radius: 5px;
 }
 
+.image-grid .more-images {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 150px; /* Same size as thumbnails */
+    height: 150px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
 .modal {
     display: none; 
     position: fixed; 
