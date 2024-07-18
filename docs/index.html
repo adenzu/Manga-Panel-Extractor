@@ -23,7 +23,13 @@
         </div>
         <button id="start-button" class="form-button">Start</button>
         <button id="download-button" class="form-button" disabled>Download</button>
+        <div id="image-grid" class="image-grid"></div>
     </div>
+    <div id="modal" class="modal">
+        <span id="close-modal" class="close">&times;</span>
+        <img class="modal-content" id="modal-img">
+    </div>
+    <script async src="https://docs.opencv.org/3.4/opencv.js" onload="onOpenCvReady();"></script>
     <script src="script.js"></script>
 </body>
 </html>
