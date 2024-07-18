@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Panel Extractor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Manga Panel Extractor</h1>
+        <div class="form-group">
+            <label for="input-files" class="form-label">Input Files</label>
+            <input type="file" id="input-files" multiple class="form-input">
+        </div>
+        <div class="form-group">
+            <input type="checkbox" id="fallback" class="form-checkbox">
+            <label for="fallback" class="form-label-inline">Fallback</label>
+        </div>
+        <div class="form-group">
+            <input type="checkbox" id="split-joint-panels" class="form-checkbox">
+            <label for="split-joint-panels" class="form-label-inline">Split Joint Panels</label>
+        </div>
+        <button id="start-button" class="form-button">Start</button>
+        <button id="download-button" class="form-button" disabled>Download</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
