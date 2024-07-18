@@ -31,9 +31,7 @@ function onOpenCvReady() {
     });
 
     document.getElementById('download-button').addEventListener('click', () => {
-        // Create a zip file and download all processed images (dummy process for demonstration)
-        // Implement actual zip creation and downloading logic here
-        alert('Downloading all processed images...');
+        downloadAllImages();
     });
 }
 
@@ -106,4 +104,21 @@ function showModal(imageSrc) {
     modal.onclick = () => {
         modal.style.display = 'none';
     }
+}
+
+function downloadAllImages() {
+    const zip = new JSZip();
+    processedImages.forEach((dataUrl, index) => {
+        const imgData = dataUrl.split(',')[1];
+        zip.file(`image_${index + 1}.png`, imgData, { base64: true });
+    });
+
+    zip.generateAsync({ type: 'blob' }).then(function (content) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = 'manga_panels.zip';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
 }
