@@ -1,0 +1,156 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+h6 {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+h6 a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+h6 a:hover {
+    text-decoration: underline;
+}
+
+.header-group {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-label-inline {
+    margin-left: 8px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.form-checkbox {
+    margin-right: 8px;
+}
+
+.form-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.form-button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.form-button:hover:not(:disabled) {
+    background-color: #0056b3;
+}
+
+.image-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.image-grid img {
+    width: 150px; /* Thumbnail size */
+    height: 150px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+}
+
+.image-grid .more-images {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 150px; /* Same size as thumbnails */
+    height: 150px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1; 
+    padding-top: 60px; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.9); 
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 80%;
+    max-height: 80%;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}

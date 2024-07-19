@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Panel Extractor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Manga Panel Extractor</h1>
+        <h6>Install desktop app <a href="https://github.com/adenzu/Manga-Panel-Extractor/releases">HERE</a></h6>
+        <h6>
+            GitHub repository:
+            <a href="https://github.com/adenzu/Manga-Panel-Extractor">
+                <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub logo" style="width:20px;height:20px;margin-right:5px;">
+                Manga Panel Extractor
+            </a>
+        </h6><div class="form-group">
+            <label for="input-files" class="form-label">Input Manga Page Files</label>
+            <input type="file" id="input-files" multiple class="form-input">
+        </div>
+        <!-- <div class="form-group">
+            <input type="checkbox" id="fallback" class="form-checkbox">
+            <label for="fallback" class="form-label-inline">Fallback</label>
+        </div>
+        <div class="form-group">
+            <input type="checkbox" id="split-joint-panels" class="form-checkbox">
+            <label for="split-joint-panels" class="form-label-inline">Split Joint Panels</label>
+        </div> -->
+        <button id="start-button" class="form-button">Start</button>
+        <button id="download-button" class="form-button" disabled>Download</button>
+        <div id="image-grid" class="image-grid"></div>
+    </div>
+    <div id="modal" class="modal">
+        <span id="close-modal" class="close">&times;</span>
+        <img class="modal-content" id="modal-img">
+    </div>
+    <script async src="https://docs.opencv.org/3.4/opencv.js" onload="onOpenCvReady();"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

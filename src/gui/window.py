@@ -1,5 +1,7 @@
 import os
 from PyQt6.QtWidgets import QMainWindow, QLabel, QLineEdit, QPushButton, QCheckBox, QMessageBox, QFileDialog
+from utils.utils import get_file_names, supported_types
+from gui.extractor import ExtractionThread
 
 # TODO: Clean up the GUI positioning and resizing code
 class MainWindow(QMainWindow):
