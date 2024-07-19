@@ -181,17 +181,9 @@ function extract_panels(image, panel_contours, accept_page_as_panel = true) {
     return returned_panels;
 }
 
-function processImage(image, filename) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    canvas.width = image.width;
-    canvas.height = image.height;
-    ctx.drawImage(image, 0, 0);
-
-    let src = cv.imread(canvas);
+function preprocess(image) {
     let gray = new cv.Mat();
-    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+    cv.cvtColor(image, gray, cv.COLOR_RGBA2GRAY);
     let blurred = new cv.Mat();
     let ksize = new cv.Size(3, 3);
     cv.GaussianBlur(gray, blurred, ksize, 0, 0, cv.BORDER_DEFAULT);
@@ -203,6 +195,25 @@ function processImage(image, filename) {
     let inverted = new cv.Mat();
     cv.bitwise_not(dilated, inverted);
 
+    gray.delete();
+    blurred.delete();
+    laplacian.delete();
+    dilated.delete();
+    M.delete();
+
+    return inverted;
+}
+
+function processImage(image, filename) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = image.width;
+    canvas.height = image.height;
+    ctx.drawImage(image, 0, 0);
+
+    let src = cv.imread(canvas);
+    let inverted = preprocess(src);
     let mask = generate_background_mask(inverted);
 
     let page_without_background = new cv.Mat();
@@ -221,11 +232,6 @@ function processImage(image, filename) {
     }
 
     src.delete();
-    gray.delete();
-    blurred.delete();
-    laplacian.delete();
-    dilated.delete();
-    M.delete();
     inverted.delete();
     mask.delete();
     page_without_background.delete();
