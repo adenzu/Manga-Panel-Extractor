@@ -1,5 +1,11 @@
-let processedImages = [];
+let numProcessed = 0;
+let processedImages = {};
 let cancel = false;
+
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const maxImages = isMobile ? 2 : 10; // TODO: Implement a better way to handle this
+
+let thumbnails = [];
 
 function zeroPad(num, places) {
     return String(num).padStart(places, '0');
@@ -7,6 +13,14 @@ function zeroPad(num, places) {
 
 function zeroPadTwo(num) {
     return zeroPad(num, 2);
+}
+
+function addProcessedImage(filename, dataUrl) {
+    numProcessed++;
+    processedImages[filename].push(dataUrl);
+    if (thumbnails.length < maxImages) {
+        thumbnails.push({ filename: filename, dataUrl: dataUrl });
+    }
 }
 
 function onOpenCvReady() {
@@ -35,7 +49,9 @@ function onOpenCvReady() {
             return;
         }
 
-        processedImages = [];
+        numProcessed = 0;
+        processedImages = {};
+        thumbnails = [];
         document.getElementById('image-grid').innerHTML = '';
         document.getElementById('download-button').disabled = true;
         document.getElementById('download-button').textContent = 'Processing Images...';
@@ -226,10 +242,11 @@ function processImage(image, filename) {
 
     let panels = extract_panels(src, contours);
 
+    processedImages[filename] = [];
     for (let i = 0; i < panels.length; i++) {
         let panelCanvas = document.createElement('canvas');
         cv.imshow(panelCanvas, panels[i]);
-        processedImages.push({ dataUrl: panelCanvas.toDataURL('image/png'), filename: filename });
+        addProcessedImage(filename, panelCanvas.toDataURL('image/png'));
     }
 
     src.delete();
@@ -247,16 +264,9 @@ function updateImageGrid() {
     const grid = document.getElementById('image-grid');
     grid.innerHTML = '';
 
-    function isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
+    const remainingImages = numProcessed - maxImages;
 
-    const maxImages = isMobile() ? 2 : 10; // TODO: Implement a better way to handle this
-
-    const imagesToShow = processedImages.slice(0, maxImages);
-    const remainingImages = processedImages.length - maxImages;
-
-    imagesToShow.forEach((image, index) => {
+    thumbnails.forEach((image, index) => {
         const img = document.createElement('img');
         img.src = image.dataUrl;
         img.alt = image.filename;
@@ -294,14 +304,18 @@ async function downloadAllImages() {
 
     document.getElementById('download-button').disabled = true;
 
-    for (let index = 0; index < processedImages.length; index++) {
-        const image = processedImages[index];
-        const imgData = image.dataUrl.split(',')[1];
-        const blob = await fetch(`data:image/png;base64,${imgData}`).then(res => res.blob());
+    let total = 0;
+    for (var filename in processedImages) {
+        for (let i = 0; i < processedImages[filename].length; i++) {
+            const image = processedImages[filename][i];
+            const imgData = image.split(',')[1];
+            const blob = await fetch(`data:image/png;base64,${imgData}`).then(res => res.blob());
 
-        await writer.add(`${image.filename}_panel_${zeroPadTwo(index + 1)}.png`, new zip.BlobReader(blob));
+            await writer.add(`${filename}_panel_${zeroPadTwo(i + 1)}.png`, new zip.BlobReader(blob));
 
-        document.getElementById('download-button').textContent = `Downloading... (${index + 1}/${processedImages.length})`;
+            document.getElementById('download-button').textContent = `Downloading... (${total + 1}/${numProcessed})`;
+            total++;
+        }
     }
 
     const zipBlob = await writer.close();
