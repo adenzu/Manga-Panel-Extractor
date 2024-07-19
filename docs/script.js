@@ -222,7 +222,7 @@ function updateImageGrid() {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
-    const maxImages = isMobile() ? 2 : 10;
+    const maxImages = isMobile() ? 2 : 10; // TODO: Implement a better way to handle this
 
     const imagesToShow = processedImages.slice(0, maxImages);
     const remainingImages = processedImages.length - maxImages;
