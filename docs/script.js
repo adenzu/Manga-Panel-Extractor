@@ -1,8 +1,32 @@
 let processedImages = [];
+let cancel = false;
+
+function zeroPad(num, places) {
+    return String(num).padStart(places, '0');
+}
+
+function zeroPadFive(num) {
+    return zeroPad(num, 5);
+}
 
 function onOpenCvReady() {
     document.getElementById('download-button').disabled = true;
+    document.getElementById('download-button').addEventListener('click', () => {
+        downloadAllImages();
+    });
+
+
+    document.getElementById('cancel-button').disabled = true;
+    document.getElementById('cancel-button').addEventListener('click', () => {
+        cancel = true;
+        document.getElementById('cancel-button').disabled = true;
+    });
+
+
     document.getElementById('start-button').addEventListener('click', () => {
+        cancel = false;
+        document.getElementById('cancel-button').disabled = false;
+
         const inputFiles = document.getElementById('input-files').files;
         // const fallback = document.getElementById('fallback').checked;
         // const splitJointPanels = document.getElementById('split-joint-panels').checked;
@@ -19,27 +43,26 @@ function onOpenCvReady() {
 
         let totalFiles = inputFiles.length;
         let processedFiles = 0;
-
+        const zipFileLimit = 10;
         Array.from(inputFiles).forEach(file => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    processImage(img, file.name.split('.')[0]);
+                    if (!cancel) {
+                        processImage(img, file.name.split('.')[0]);
+                    }
                     processedFiles++;
                     if (processedFiles === totalFiles) {
                         document.getElementById('download-button').disabled = false;
                         document.getElementById('download-button').textContent = 'Download';
+                        document.getElementById('cancel-button').disabled = true;
                     }
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         });
-    });
-
-    document.getElementById('download-button').addEventListener('click', () => {
-        downloadAllImages();
     });
 }
 
@@ -267,7 +290,7 @@ function downloadAllImages() {
 
     processedImages.forEach((image, index) => {
         const imgData = image.dataUrl.split(',')[1];
-        zip.file(`${image.filename}_panel_${index + 1}.png`, imgData, { base64: true });
+        zip.file(`${image.filename}_panel_${zeroPadFive(index + 1)}.png`, imgData, { base64: true });
         document.getElementById('download-button').textContent = `Downloading... (${index + 1}/${processedImages.length})`;
     });
 
