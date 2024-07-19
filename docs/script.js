@@ -218,7 +218,12 @@ function updateImageGrid() {
     const grid = document.getElementById('image-grid');
     grid.innerHTML = '';
 
-    const maxImages = 10;
+    function isMobile() {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    const maxImages = isMobile() ? 2 : 10;
+
     const imagesToShow = processedImages.slice(0, maxImages);
     const remainingImages = processedImages.length - maxImages;
 
