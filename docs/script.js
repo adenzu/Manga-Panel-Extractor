@@ -5,8 +5,8 @@ function zeroPad(num, places) {
     return String(num).padStart(places, '0');
 }
 
-function zeroPadFive(num) {
-    return zeroPad(num, 5);
+function zeroPadTwo(num) {
+    return zeroPad(num, 2);
 }
 
 function onOpenCvReady() {
@@ -181,9 +181,7 @@ function extract_panels(image, panel_contours, accept_page_as_panel = true) {
     return returned_panels;
 }
 
-function preprocess(image) {
-    let gray = new cv.Mat();
-    cv.cvtColor(image, gray, cv.COLOR_RGBA2GRAY);
+function preprocess(gray) {
     let blurred = new cv.Mat();
     let ksize = new cv.Size(3, 3);
     cv.GaussianBlur(gray, blurred, ksize, 0, 0, cv.BORDER_DEFAULT);
@@ -195,7 +193,6 @@ function preprocess(image) {
     let inverted = new cv.Mat();
     cv.bitwise_not(dilated, inverted);
 
-    gray.delete();
     blurred.delete();
     laplacian.delete();
     dilated.delete();
@@ -213,7 +210,11 @@ function processImage(image, filename) {
     ctx.drawImage(image, 0, 0);
 
     let src = cv.imread(canvas);
-    let inverted = preprocess(src);
+
+    let gray = new cv.Mat();
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+
+    let inverted = preprocess(gray);
     let mask = generate_background_mask(inverted);
 
     let page_without_background = new cv.Mat();
@@ -232,6 +233,7 @@ function processImage(image, filename) {
     }
 
     src.delete();
+    gray.delete();
     inverted.delete();
     mask.delete();
     page_without_background.delete();
@@ -287,26 +289,29 @@ function showModal(imageSrc) {
     }
 }
 
-function downloadAllImages() {
-    const zip = new JSZip();
+async function downloadAllImages() {
+    const writer = new zip.ZipWriter(new zip.BlobWriter("application/zip"));
 
     document.getElementById('download-button').disabled = true;
 
-    processedImages.forEach((image, index) => {
+    for (let index = 0; index < processedImages.length; index++) {
+        const image = processedImages[index];
         const imgData = image.dataUrl.split(',')[1];
-        zip.file(`${image.filename}_panel_${zeroPadFive(index + 1)}.png`, imgData, { base64: true });
-        document.getElementById('download-button').textContent = `Downloading... (${index + 1}/${processedImages.length})`;
-    });
+        const blob = await fetch(`data:image/png;base64,${imgData}`).then(res => res.blob());
 
-    zip.generateAsync({ type: 'blob' }).then(function (content) {
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(content);
-        link.download = 'manga_panels.zip';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }).then(() => {
-        document.getElementById('download-button').textContent = 'Download';
-        document.getElementById('download-button').disabled = false;
-    });
+        await writer.add(`${image.filename}_panel_${zeroPadTwo(index + 1)}.png`, new zip.BlobReader(blob));
+
+        document.getElementById('download-button').textContent = `Downloading... (${index + 1}/${processedImages.length})`;
+    }
+
+    const zipBlob = await writer.close();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(zipBlob);
+    link.download = 'manga_panels.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    document.getElementById('download-button').textContent = 'Download';
+    document.getElementById('download-button').disabled = false;
 }
