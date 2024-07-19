@@ -11,17 +11,16 @@ function zeroPadFive(num) {
 
 function onOpenCvReady() {
     document.getElementById('download-button').disabled = true;
+    document.getElementById('cancel-button').disabled = true;
+
     document.getElementById('download-button').addEventListener('click', () => {
         downloadAllImages();
     });
 
-
-    document.getElementById('cancel-button').disabled = true;
     document.getElementById('cancel-button').addEventListener('click', () => {
         cancel = true;
         document.getElementById('cancel-button').disabled = true;
     });
-
 
     document.getElementById('start-button').addEventListener('click', () => {
         cancel = false;
@@ -43,7 +42,6 @@ function onOpenCvReady() {
 
         let totalFiles = inputFiles.length;
         let processedFiles = 0;
-        const zipFileLimit = 10;
         Array.from(inputFiles).forEach(file => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -205,7 +203,7 @@ function processImage(image, filename) {
     let inverted = new cv.Mat();
     cv.bitwise_not(dilated, inverted);
 
-    let mask = generate_background_mask(gray);
+    let mask = generate_background_mask(inverted);
 
     let page_without_background = new cv.Mat();
     cv.subtract(gray, mask, page_without_background);
@@ -305,6 +303,4 @@ function downloadAllImages() {
         document.getElementById('download-button').textContent = 'Download';
         document.getElementById('download-button').disabled = false;
     });
-
-    processedImages = [];
 }
