@@ -22,6 +22,27 @@ h1 {
     font-size: 24px;
 }
 
+h6 {
+    margin: 10px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+h6 a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+h6 a:hover {
+    text-decoration: underline;
+}
+
+.header-group {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+
 .form-group {
     margin-bottom: 15px;
     text-align: left;
@@ -113,8 +134,8 @@ h1 {
 .modal-content {
     margin: auto;
     display: block;
-    width: 80%;
-    max-width: 700px;
+    max-width: 80%;
+    max-height: 80%;
 }
 
 .close {

@@ -4,17 +4,18 @@ function onOpenCvReady() {
     document.getElementById('download-button').disabled = true;
     document.getElementById('start-button').addEventListener('click', () => {
         const inputFiles = document.getElementById('input-files').files;
-        const fallback = document.getElementById('fallback').checked;
-        const splitJointPanels = document.getElementById('split-joint-panels').checked;
+        // const fallback = document.getElementById('fallback').checked;
+        // const splitJointPanels = document.getElementById('split-joint-panels').checked;
 
         if (inputFiles.length === 0) {
-            alert('Please select input files.');
+            alert('Please select input manga page files.');
             return;
         }
 
         processedImages = [];
         document.getElementById('image-grid').innerHTML = '';
         document.getElementById('download-button').disabled = true;
+        document.getElementById('download-button').textContent = 'Processing Images...';
 
         let totalFiles = inputFiles.length;
         let processedFiles = 0;
@@ -28,6 +29,7 @@ function onOpenCvReady() {
                     processedFiles++;
                     if (processedFiles === totalFiles) {
                         document.getElementById('download-button').disabled = false;
+                        document.getElementById('download-button').textContent = 'Download';
                     }
                 };
                 img.src = e.target.result;
