@@ -14,21 +14,26 @@ function onOpenCvReady() {
 
         processedImages = [];
         document.getElementById('image-grid').innerHTML = '';
+        document.getElementById('download-button').disabled = true;
+
+        let totalFiles = inputFiles.length;
+        let processedFiles = 0;
 
         Array.from(inputFiles).forEach(file => {
             const reader = new FileReader();
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    processImage(img);
-                }
+                    processImage(img, file.name.split('.')[0]);
+                    processedFiles++;
+                    if (processedFiles === totalFiles) {
+                        document.getElementById('download-button').disabled = false;
+                    }
+                };
                 img.src = e.target.result;
-            }
+            };
             reader.readAsDataURL(file);
         });
-
-        // Enable download button after processing
-        document.getElementById('download-button').disabled = false;
     });
 
     document.getElementById('download-button').addEventListener('click', () => {
@@ -153,7 +158,7 @@ function extract_panels(image, panel_contours, accept_page_as_panel = true) {
     return returned_panels;
 }
 
-function processImage(image) {
+function processImage(image, filename) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
@@ -189,7 +194,7 @@ function processImage(image) {
     for (let i = 0; i < panels.length; i++) {
         let panelCanvas = document.createElement('canvas');
         cv.imshow(panelCanvas, panels[i]);
-        processedImages.push(panelCanvas.toDataURL('image/png'));
+        processedImages.push({ dataUrl: panelCanvas.toDataURL('image/png'), filename: filename });
     }
 
     src.delete();
@@ -215,10 +220,11 @@ function updateImageGrid() {
     const imagesToShow = processedImages.slice(0, maxImages);
     const remainingImages = processedImages.length - maxImages;
 
-    imagesToShow.forEach((dataUrl, index) => {
+    imagesToShow.forEach((image, index) => {
         const img = document.createElement('img');
-        img.src = dataUrl;
-        img.addEventListener('click', () => showModal(dataUrl));
+        img.src = image.dataUrl;
+        img.alt = image.filename;
+        img.addEventListener('click', () => showModal(image.dataUrl));
         grid.appendChild(img);
     });
 
@@ -252,9 +258,9 @@ function downloadAllImages() {
 
     document.getElementById('download-button').disabled = true;
 
-    processedImages.forEach((dataUrl, index) => {
-        const imgData = dataUrl.split(',')[1];
-        zip.file(`image_${index + 1}.png`, imgData, { base64: true });
+    processedImages.forEach((image, index) => {
+        const imgData = image.dataUrl.split(',')[1];
+        zip.file(`${image.filename}_panel_${index + 1}.png`, imgData, { base64: true });
         document.getElementById('download-button').textContent = `Downloading... (${index + 1}/${processedImages.length})`;
     });
 
@@ -269,4 +275,6 @@ function downloadAllImages() {
         document.getElementById('download-button').textContent = 'Download';
         document.getElementById('download-button').disabled = false;
     });
+
+    processedImages = [];
 }
