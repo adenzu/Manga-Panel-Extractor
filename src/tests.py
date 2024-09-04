@@ -3,16 +3,19 @@ import os
 from image_processing.panel import extract_panels_for_images_in_folder
 
 
-def runPerformanceTests() -> None:
-    def getRightPath(path: str) -> str:
+def run_performance_tests() -> None:
+    """
+    Run performance tests
+    """
+    def get_right_path(path: str) -> str:
         script_dir = os.path.dirname(__file__)
         return os.path.join(script_dir, path)
     
-    def getRightPaths(paths: list[str]) -> list[str]:
-        return [getRightPath(path) for path in paths]
+    def get_right_paths(paths: list[str]) -> list[str]:
+        return [get_right_path(path) for path in paths]
 
-    test_input_dir = getRightPath("../test-in")
-    test_output_dirs = getRightPaths(["../test-out/base", "../test-out/fallback", "../test-out/split", "../test-out/split-fallback"])
+    test_input_dir = get_right_path("../test-in")
+    test_output_dirs = get_right_paths(["../test-out/base", "../test-out/fallback", "../test-out/split", "../test-out/split-fallback"])
 
     settings = [0b00, 0b01, 0b10, 0b11]
     settings_string = ["base", "fallback", "split", "split-fallback"]
@@ -28,4 +31,4 @@ def runPerformanceTests() -> None:
         print(f"Execution time: {execution_time} seconds for {files} files and {panels} panels with {settings_string[i]} settings")
 
 if __name__ == "__main__":
-    runPerformanceTests()
+    run_performance_tests()
