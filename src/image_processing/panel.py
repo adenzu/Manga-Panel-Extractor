@@ -65,9 +65,20 @@ def extract_panels(
     image: np.ndarray,
     panel_contours: list[np.ndarray],
     accept_page_as_panel: bool = True,
+    mode: str = 'bounding',
+    fill_in_color: tuple[int, int, int] = (255, 255, 255),
 ) -> list[np.ndarray]:
     """
     Extracts panels from the image using the given contours corresponding to the panels
+    
+    Parameters:
+    - image: The image to extract the panels from
+    - panel_contours: The contours corresponding to the panels
+    - accept_page_as_panel: Whether to accept the whole page as a panel
+    - mode: The mode to use for extraction
+        - 'contour': Extracts the panels by cuting out only the inside of the contours
+        - 'bounding': Extracts the panels by using the bounding boxes of the contours
+    - fill_in_color: The color to fill in the background of the panel images
     """
     PAGE_TO_PANEL_RATIO = 32
 
@@ -76,6 +87,15 @@ def extract_panels(
     area_threshold = image_area // PAGE_TO_PANEL_RATIO
 
     returned_panels = []
+
+    crop_source = image
+
+    if mode == 'contour':
+        mask = np.zeros_like(image)
+        cv2.drawContours(mask, panel_contours, -1, (255, 255, 255), -1)
+        masked_image = cv2.bitwise_and(image, mask)
+        masked_image = cv2.bitwise_or(cv2.bitwise_and(cv2.bitwise_not(mask), fill_in_color), masked_image)
+        crop_source = masked_image
 
     for contour in panel_contours:
         x, y, w, h = cv2.boundingRect(contour)
@@ -88,8 +108,7 @@ def extract_panels(
         if (area < area_threshold):
             continue
 
-        fitted_panel = image[y: y + h, x: x + w]
-
+        fitted_panel = crop_source[y:y + h, x:x + w]
         returned_panels.append(fitted_panel)
 
     return returned_panels
