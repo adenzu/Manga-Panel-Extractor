@@ -6,3 +6,4 @@ PyQt6_sip
 argparse
 dataclasses
 tqdm
+pyqt6-tools

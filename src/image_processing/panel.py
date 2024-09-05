@@ -223,7 +223,11 @@ def joint_panel_split_extraction(grayscale_image: np.ndarray, background_mask: n
     return page_without_background
 
 
-def threshold_extraction(image: np.ndarray, grayscale_image: np.ndarray) -> list[np.ndarray]:
+def threshold_extraction(
+        image: np.ndarray, 
+        grayscale_image: np.ndarray, 
+        mode: str = 'bounding'
+) -> list[np.ndarray]:
     """
     Extracts panels from the image using thresholding
     """
@@ -235,7 +239,7 @@ def threshold_extraction(image: np.ndarray, grayscale_image: np.ndarray) -> list
     processed_image = cv2.dilate(processed_image, np.ones((3, 3), np.uint8), iterations=2)
     contours, _ = cv2.findContours(processed_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    panels = extract_panels(image, contours, False)
+    panels = extract_panels(image, contours, False, mode=mode)
 
     return panels
 
@@ -257,12 +261,23 @@ def get_page_without_background(grayscale_image: np.ndarray, background_mask: np
     return page_without_background
 
 
-def get_fallback_panels(image: np.ndarray, grayscale_image: np.ndarray, fallback: bool, panels: list[np.ndarray]) -> list[np.ndarray]:
+def get_fallback_panels(
+        image: np.ndarray, 
+        grayscale_image: np.ndarray, 
+        fallback: bool, 
+        panels: list[np.ndarray],
+        mode: str = 'bounding'
+) -> list[np.ndarray]:
     """
     Checks if the fallback is needed and returns the appropriate panels
+    
+    Parameters:
+    - mode: The mode to use for extraction
+        - 'contour': Extracts the panels by cuting out only the inside of the contours
+        - 'bounding': Extracts the panels by using the bounding boxes of the contours
     """
     if fallback and len(panels) < 2:
-        tmp = threshold_extraction(image, grayscale_image)
+        tmp = threshold_extraction(image, grayscale_image, mode=mode)
         if len(tmp) > len(panels):
             return tmp
     
@@ -274,9 +289,15 @@ def generate_panel_blocks(
         background_generator: Callable[[np.ndarray], np.ndarray] = generate_background_mask,
         split_joint_panels: bool = False,
         fallback: bool = True,
+        mode: str = 'bounding'
 ) -> list[np.ndarray]:
     """
     Generates the separate panel images from the base image
+    
+    Parameters:
+    - mode: The mode to use for extraction
+        - 'contour': Extracts the panels by cuting out only the inside of the contours
+        - 'bounding': Extracts the panels by using the bounding boxes of the contours
     """
 
     grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -284,8 +305,8 @@ def generate_panel_blocks(
     background_mask = background_generator(processed_image)
     page_without_background = get_page_without_background(grayscale_image, background_mask, split_joint_panels)
     contours, _ = cv2.findContours(page_without_background, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    panels = extract_panels(image, contours)
-    panels = get_fallback_panels(image, grayscale_image, fallback, panels)
+    panels = extract_panels(image, contours, mode=mode)
+    panels = get_fallback_panels(image, grayscale_image, fallback, panels, mode=mode)
         
     return panels
 

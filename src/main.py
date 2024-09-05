@@ -1,9 +1,17 @@
 import sys
 import os
 import argparse
-from PyQt6.QtWidgets import QApplication
-from gui.window import MainWindow
+from PyQt6.QtWidgets import QApplication, QMainWindow
+from gui.window import MainWindowUI
 from image_processing.panel import extract_panels_for_image, extract_panels_for_images_in_folder
+
+
+def start_gui():
+    app = QApplication(sys.argv)
+    window = QMainWindow()
+    ui = MainWindowUI(window)
+    window.show()
+    sys.exit(app.exec())
 
 
 def make_parser() -> argparse.ArgumentParser:
@@ -29,10 +37,7 @@ def handle_parameters(parser: argparse.ArgumentParser) -> None:
     args = parser.parse_args()
 
     if len(sys.argv) == 1 or args.gui:
-        app = QApplication(sys.argv)
-        window = MainWindow()
-        window.show()
-        sys.exit(app.exec())
+        start_gui()
     elif args.input_dir:
         if args.output_dir:
             extract_panels_for_images_in_folder(args.input_dir, args.output_dir, args.fallback, args.split_joint_panels)
