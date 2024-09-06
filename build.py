@@ -11,7 +11,7 @@ def convert_ui_to_py() -> None:
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     py_dir = os.path.join("src", "gui")
-    ui_dir = os.path.join("src", "designer")
+    ui_dir = os.path.join("res", "designer")
     ui_files = glob.glob(os.path.join(ui_dir, "*.ui"))
 
     # Create the destination directory if it doesn't exist

@@ -60,7 +60,8 @@ class MainWindowUI(Ui_MainWindow):
                 output_dir, 
                 self.split_joint_panels_check_box.isChecked(), 
                 self.use_fallback_check_box.isChecked(), 
-                self.output_separate_folders_check_box.isChecked()
+                self.output_separate_folders_check_box.isChecked(),
+                self.output_mode_combo_box.currentIndex()
             )
 
             self.extraction_thread.progress_update.connect(self.update_progress)

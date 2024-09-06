@@ -6,6 +6,12 @@ from image_processing.image import is_contour_rectangular, apply_adaptive_thresh
 from utils.utils import load_images, load_image
 from tqdm import tqdm
 
+class OutputMode:
+    BOUNDING = 'bounding'
+    MASKED = 'masked'
+
+    def from_index(index: int) -> str:
+        return [OutputMode.BOUNDING, OutputMode.MASKED][index]
 
 def get_background_intensity_range(grayscale_image: np.ndarray, min_range: int = 1) -> tuple[int, int]:
     """
@@ -66,7 +72,7 @@ def extract_panels(
     panel_contours: list[np.ndarray],
     accept_page_as_panel: bool = True,
     mode: str = 'bounding',
-    fill_in_color: tuple[int, int, int] = (255, 255, 255),
+    fill_in_color: tuple[int, int, int] = (0, 0, 0),
 ) -> list[np.ndarray]:
     """
     Extracts panels from the image using the given contours corresponding to the panels
@@ -76,7 +82,7 @@ def extract_panels(
     - panel_contours: The contours corresponding to the panels
     - accept_page_as_panel: Whether to accept the whole page as a panel
     - mode: The mode to use for extraction
-        - 'contour': Extracts the panels by cuting out only the inside of the contours
+        - 'masked': Extracts the panels by cuting out only the inside of the contours
         - 'bounding': Extracts the panels by using the bounding boxes of the contours
     - fill_in_color: The color to fill in the background of the panel images
     """
@@ -87,15 +93,6 @@ def extract_panels(
     area_threshold = image_area // PAGE_TO_PANEL_RATIO
 
     returned_panels = []
-
-    crop_source = image
-
-    if mode == 'contour':
-        mask = np.zeros_like(image)
-        cv2.drawContours(mask, panel_contours, -1, (255, 255, 255), -1)
-        masked_image = cv2.bitwise_and(image, mask)
-        masked_image = cv2.bitwise_or(cv2.bitwise_and(cv2.bitwise_not(mask), fill_in_color), masked_image)
-        crop_source = masked_image
 
     for contour in panel_contours:
         x, y, w, h = cv2.boundingRect(contour)
@@ -108,7 +105,15 @@ def extract_panels(
         if (area < area_threshold):
             continue
 
-        fitted_panel = crop_source[y:y + h, x:x + w]
+        if mode == 'masked':
+            mask = np.zeros_like(image)
+            cv2.drawContours(mask, [contour], -1, (255, 255, 255), -1)
+            masked_image = cv2.bitwise_and(image, mask)
+            fitted_panel = masked_image[y:y + h, x:x + w]
+            fitted_panel = cv2.bitwise_or(cv2.bitwise_and(cv2.bitwise_not(mask[y:y + h, x:x + w]), fill_in_color), fitted_panel)
+        else:
+            fitted_panel = image[y:y + h, x:x + w]
+        
         returned_panels.append(fitted_panel)
 
     return returned_panels
@@ -273,7 +278,7 @@ def get_fallback_panels(
     
     Parameters:
     - mode: The mode to use for extraction
-        - 'contour': Extracts the panels by cuting out only the inside of the contours
+        - 'masked': Extracts the panels by cuting out only the inside of the contours
         - 'bounding': Extracts the panels by using the bounding boxes of the contours
     """
     if fallback and len(panels) < 2:
@@ -296,7 +301,7 @@ def generate_panel_blocks(
     
     Parameters:
     - mode: The mode to use for extraction
-        - 'contour': Extracts the panels by cuting out only the inside of the contours
+        - 'masked': Extracts the panels by cuting out only the inside of the contours
         - 'bounding': Extracts the panels by using the bounding boxes of the contours
     """
 
