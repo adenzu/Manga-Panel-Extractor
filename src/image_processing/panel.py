@@ -343,7 +343,14 @@ def generate_panel_blocks(
     return panels
 
 
-def extract_panels_for_image(image_path: str, output_dir: str, fallback: bool = True, split_joint_panels: bool = False):
+def extract_panels_for_image(
+        image_path: str, 
+        output_dir: str, 
+        fallback: bool = True, 
+        split_joint_panels: bool = False,
+        mode: str = OutputMode.BOUNDING,
+        merge: str = MergeMode.NONE
+        ) -> None:
     """
     Extracts panels for a single image
     """
@@ -352,13 +359,20 @@ def extract_panels_for_image(image_path: str, output_dir: str, fallback: bool = 
     image_path = os.path.abspath(image_path)
     image = load_image(os.path.dirname(image_path), image_path)
     image_name, image_ext = os.path.splitext(image.image_name)
-    panel_blocks = generate_panel_blocks(image.image, split_joint_panels=split_joint_panels, fallback=fallback)
+    panel_blocks = generate_panel_blocks(image.image, split_joint_panels=split_joint_panels, fallback=fallback, mode=mode, merge=merge)
     for k, panel in enumerate(tqdm(panel_blocks, total=len(panel_blocks))):
         out_path = os.path.join(output_dir, f"{image_name}_{k}{image_ext}")
         cv2.imwrite(out_path, panel)
 
 
-def extract_panels_for_images_in_folder(input_dir: str, output_dir: str, fallback: bool = True, split_joint_panels: bool = False):
+def extract_panels_for_images_in_folder(
+        input_dir: str, 
+        output_dir: str, 
+        fallback: bool = True, 
+        split_joint_panels: bool = False,
+        mode: str = OutputMode.BOUNDING,
+        merge: str = MergeMode.NONE
+        ) -> tuple[int, int]:
     """
     Basically the main function of the program,
     this is written with cli usage in mind
@@ -370,7 +384,7 @@ def extract_panels_for_images_in_folder(input_dir: str, output_dir: str, fallbac
     num_panels = 0
     for _, image in enumerate(tqdm(load_images(input_dir), total=num_files)):
         image_name, image_ext = os.path.splitext(image.image_name)
-        panel_blocks = generate_panel_blocks(image.image, fallback=fallback, split_joint_panels=split_joint_panels)
+        panel_blocks = generate_panel_blocks(image.image, fallback=fallback, split_joint_panels=split_joint_panels, mode=mode, merge=merge)
         for j, panel in enumerate(panel_blocks):
             out_path = os.path.join(output_dir, f"{image_name}_{j}{image_ext}")
             cv2.imwrite(out_path, panel)
