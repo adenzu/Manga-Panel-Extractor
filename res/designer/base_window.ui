@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>374</width>
-    <height>223</height>
+    <height>251</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -125,6 +125,42 @@
         <item>
          <property name="text">
           <string>Masked </string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_6">
+      <item>
+       <widget class="QLabel" name="merge_mode_label">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;None - Extract all panels separately&lt;/p&gt;&lt;p&gt;Vertically - Merge panels of vertical stripes&lt;/p&gt;&lt;p&gt;Horizontally - Merge panels of horizontal stripes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Merge Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="merge_mode_combo_box">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;None - Extract all panels separately&lt;/p&gt;&lt;p&gt;Vertical - Merge panels of vertical stripes&lt;/p&gt;&lt;p&gt;Horizontal - Merge panels of horizontal stripes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>None</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Vertical</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Horizontal</string>
          </property>
         </item>
        </widget>

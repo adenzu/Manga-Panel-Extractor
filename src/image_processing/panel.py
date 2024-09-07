@@ -2,9 +2,10 @@ import os
 from typing import Callable
 import cv2
 import numpy as np
-from image_processing.image import is_contour_rectangular, apply_adaptive_threshold
+from image_processing.image import is_contour_rectangular, apply_adaptive_threshold, group_contours_horizontally, group_contours_vertically, adaptive_hconcat, adaptive_vconcat
 from utils.utils import load_images, load_image
 from tqdm import tqdm
+
 
 class OutputMode:
     BOUNDING = 'bounding'
@@ -12,6 +13,16 @@ class OutputMode:
 
     def from_index(index: int) -> str:
         return [OutputMode.BOUNDING, OutputMode.MASKED][index]
+
+
+class MergeMode:
+    NONE = 'none'
+    VERTICAL = 'vertical'
+    HORIZONTAL = 'horizontal'
+
+    def from_index(index: int) -> str:
+        return [MergeMode.NONE, MergeMode.VERTICAL, MergeMode.HORIZONTAL][index]
+    
 
 def get_background_intensity_range(grayscale_image: np.ndarray, min_range: int = 1) -> tuple[int, int]:
     """
@@ -71,7 +82,7 @@ def extract_panels(
     image: np.ndarray,
     panel_contours: list[np.ndarray],
     accept_page_as_panel: bool = True,
-    mode: str = 'bounding',
+    mode: str = OutputMode.BOUNDING,
     fill_in_color: tuple[int, int, int] = (0, 0, 0),
 ) -> list[np.ndarray]:
     """
@@ -86,11 +97,7 @@ def extract_panels(
         - 'bounding': Extracts the panels by using the bounding boxes of the contours
     - fill_in_color: The color to fill in the background of the panel images
     """
-    PAGE_TO_PANEL_RATIO = 32
-
     height, width = image.shape[:2]
-    image_area = width * height
-    area_threshold = image_area // PAGE_TO_PANEL_RATIO
 
     returned_panels = []
 
@@ -98,11 +105,6 @@ def extract_panels(
         x, y, w, h = cv2.boundingRect(contour)
 
         if not accept_page_as_panel and ((w >= width * 0.99) or (h >= height * 0.99)):
-            continue
-
-        area = cv2.contourArea(contour)
-
-        if (area < area_threshold):
             continue
 
         if mode == 'masked':
@@ -228,10 +230,18 @@ def joint_panel_split_extraction(grayscale_image: np.ndarray, background_mask: n
     return page_without_background
 
 
+def is_contour_sufficiently_big(contour: np.ndarray, image_height: int, image_width: int) -> bool:
+    PAGE_TO_PANEL_RATIO = 32
+    image_area = image_width * image_height
+    area_threshold = image_area // PAGE_TO_PANEL_RATIO
+    area = cv2.contourArea(contour)
+    return area > area_threshold
+
+
 def threshold_extraction(
         image: np.ndarray, 
         grayscale_image: np.ndarray, 
-        mode: str = 'bounding'
+        mode: str = OutputMode.BOUNDING,
 ) -> list[np.ndarray]:
     """
     Extracts panels from the image using thresholding
@@ -243,7 +253,7 @@ def threshold_extraction(
     processed_image = cv2.subtract(processed_image, thresh)
     processed_image = cv2.dilate(processed_image, np.ones((3, 3), np.uint8), iterations=2)
     contours, _ = cv2.findContours(processed_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+    contours = list(filter(lambda c: is_contour_sufficiently_big(c, image.shape[0], image.shape[1]), contours))
     panels = extract_panels(image, contours, False, mode=mode)
 
     return panels
@@ -271,7 +281,7 @@ def get_fallback_panels(
         grayscale_image: np.ndarray, 
         fallback: bool, 
         panels: list[np.ndarray],
-        mode: str = 'bounding'
+        mode: str = OutputMode.BOUNDING,
 ) -> list[np.ndarray]:
     """
     Checks if the fallback is needed and returns the appropriate panels
@@ -294,7 +304,8 @@ def generate_panel_blocks(
         background_generator: Callable[[np.ndarray], np.ndarray] = generate_background_mask,
         split_joint_panels: bool = False,
         fallback: bool = True,
-        mode: str = 'bounding'
+        mode: str = OutputMode.BOUNDING,
+        merge: str = MergeMode.NONE
 ) -> list[np.ndarray]:
     """
     Generates the separate panel images from the base image
@@ -310,9 +321,25 @@ def generate_panel_blocks(
     background_mask = background_generator(processed_image)
     page_without_background = get_page_without_background(grayscale_image, background_mask, split_joint_panels)
     contours, _ = cv2.findContours(page_without_background, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    panels = extract_panels(image, contours, mode=mode)
-    panels = get_fallback_panels(image, grayscale_image, fallback, panels, mode=mode)
-        
+    contours = list(filter(lambda c: is_contour_sufficiently_big(c, image.shape[0], image.shape[1]), contours))
+
+    def get_panels(contours):
+        panels = extract_panels(image, contours, mode=mode)
+        panels = get_fallback_panels(image, grayscale_image, fallback, panels, mode=mode)
+        return panels
+
+    panels = []
+    if merge == MergeMode.NONE:
+        panels = get_panels(contours)
+    elif merge == MergeMode.HORIZONTAL:
+        grouped_contours = group_contours_horizontally(contours)
+        for group in grouped_contours:
+            panels.append(adaptive_hconcat(get_panels(group)))
+    elif merge == MergeMode.VERTICAL:
+        grouped_contours = group_contours_vertically(contours)
+        for group in grouped_contours:
+            panels.append(adaptive_vconcat(get_panels(group)))
+
     return panels
 
 
