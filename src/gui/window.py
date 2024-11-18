@@ -1,6 +1,6 @@
 import os
 from PyQt6.QtWidgets import QMainWindow, QLabel, QLineEdit, QPushButton, QCheckBox, QMessageBox, QFileDialog
-from utils.utils import get_file_names, supported_types
+from myutils.myutils import get_file_names, supported_types
 from gui.extractor import ExtractionThread
 from gui.base_window import Ui_MainWindow
 

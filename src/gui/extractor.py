@@ -1,7 +1,7 @@
 import os
 import cv2
 from PyQt6.QtCore import QThread, pyqtSignal
-from utils.utils import load_images, ImageWithFilename
+from myutils.myutils import load_images, ImageWithFilename
 from image_processing.panel import generate_panel_blocks, OutputMode, MergeMode
 
 class ExtractionThread(QThread):

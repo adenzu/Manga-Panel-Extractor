@@ -1,11 +1,12 @@
 import os
 from typing import Callable
 import cv2
+import warnings
 import numpy as np
 from image_processing.image import is_contour_rectangular, apply_adaptive_threshold, group_contours_horizontally, group_contours_vertically, adaptive_hconcat, adaptive_vconcat
-from utils.utils import load_images, load_image
+from myutils.myutils import load_images, load_image
 from tqdm import tqdm
-
+from image_processing.model import model
 
 class OutputMode:
     BOUNDING = 'bounding'
@@ -127,6 +128,15 @@ def preprocess_image(grayscale_image: np.ndarray) -> np.ndarray:
     """
     processed_image = cv2.GaussianBlur(grayscale_image, (3, 3), 0)
     processed_image = cv2.Laplacian(processed_image, -1)
+    return processed_image
+
+
+def preprocess_image_with_dilation(grayscale_image: np.ndarray) -> np.ndarray:
+    """
+    Preprocesses the image for panel extraction
+    """
+    processed_image = cv2.GaussianBlur(grayscale_image, (3, 3), 0)
+    processed_image = cv2.Laplacian(processed_image, -1)
     processed_image = cv2.dilate(processed_image, np.ones((5, 5), np.uint8), iterations=1)
     processed_image = 255 - processed_image
     return processed_image
@@ -137,7 +147,7 @@ def joint_panel_split_extraction(grayscale_image: np.ndarray, background_mask: n
     Extracts the panels from the image with splitting the joint panels
     """
     pixels_before = np.count_nonzero(background_mask)
-    background_mask = cv2.ximgproc.thinning(background_mask)
+    background_mask = cv2.ximgproc.thinning(background_mask) 
     
     up_kernel = np.array([[0, 0, 0], [0, 1, 0], [0, 1, 0]], np.uint8)
     down_kernel = np.array([[0, 1, 0], [0, 1, 0], [0, 0, 0]], np.uint8)
@@ -317,7 +327,7 @@ def generate_panel_blocks(
     """
 
     grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    processed_image = preprocess_image(grayscale_image)
+    processed_image = preprocess_image_with_dilation(grayscale_image)
     background_mask = background_generator(processed_image)
     page_without_background = get_page_without_background(grayscale_image, background_mask, split_joint_panels)
     contours, _ = cv2.findContours(page_without_background, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -340,6 +350,24 @@ def generate_panel_blocks(
         for group in grouped_contours:
             panels.append(adaptive_vconcat(get_panels(group)))
 
+    return panels
+
+
+def generate_panel_blocks_by_ai(image: np.ndarray) -> list[np.ndarray]:
+    """
+    Generates the separate panel images from the base image using AI
+    """
+    grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    processed_image = preprocess_image(grayscale_image)
+    results = model(processed_image)
+    panels = []
+    for detection in results.xyxy[0]:  # Access predictions in (x1, y1, x2, y2, confidence, class) format
+        x1, y1, x2, y2, conf, cls = detection.tolist()  # Convert to Python list
+        x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
+        
+        # Crop the panel from the original image
+        panel = image[y1:y2, x1:x2]
+        panels.append(panel)
     return panels
 
 
@@ -389,5 +417,29 @@ def extract_panels_for_images_in_folder(
             out_path = os.path.join(output_dir, f"{image_name}_{j}{image_ext}")
             cv2.imwrite(out_path, panel)
         num_panels += len(panel_blocks)
+    return (num_files, num_panels)
+
+def extract_panels_for_images_in_folder_by_ai(
+        input_dir: str, 
+        output_dir: str
+        ) -> tuple[int, int]:
+    """
+    Basically the main function of the program,
+    this is written with cli usage in mind
+    """
+    if not os.path.exists(output_dir):
+        return (0, 0)
+    files = os.listdir(input_dir)
+    num_files = len(files)
+    num_panels = 0
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    for _, image in enumerate(tqdm(load_images(input_dir), total=num_files)):
+        image_name, image_ext = os.path.splitext(image.image_name)
+        panel_blocks = generate_panel_blocks_by_ai(image.image)
+        for j, panel in enumerate(panel_blocks):
+            out_path = os.path.join(output_dir, f"{image_name}_{j}{image_ext}")
+            cv2.imwrite(out_path, panel)
+        num_panels += len(panel_blocks)
+    warnings.filterwarnings("default", category=FutureWarning)
     return (num_files, num_panels)
 
