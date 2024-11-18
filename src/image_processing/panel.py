@@ -100,6 +100,7 @@ def extract_panels(
     height, width = image.shape[:2]
 
     returned_panels = []
+    returned_panel_bounds = []
 
     for contour in panel_contours:
         x, y, w, h = cv2.boundingRect(contour)
@@ -118,7 +119,12 @@ def extract_panels(
         
         returned_panels.append(fitted_panel)
 
-    return returned_panels
+        x_center = x + w // 2
+        y_center = y + h // 2
+
+        returned_panel_bounds.append((x_center, y_center, w, h))
+
+    return returned_panels, returned_panel_bounds
 
 
 def preprocess_image(grayscale_image: np.ndarray) -> np.ndarray:
@@ -334,11 +340,11 @@ def generate_panel_blocks(
     elif merge == MergeMode.HORIZONTAL:
         grouped_contours = group_contours_horizontally(contours)
         for group in grouped_contours:
-            panels.append(adaptive_hconcat(get_panels(group)))
+            panels.append(adaptive_hconcat(get_panels(group)[0]))
     elif merge == MergeMode.VERTICAL:
         grouped_contours = group_contours_vertically(contours)
         for group in grouped_contours:
-            panels.append(adaptive_vconcat(get_panels(group)))
+            panels.append(adaptive_vconcat(get_panels(group)[0]))
 
     return panels
 
@@ -384,10 +390,26 @@ def extract_panels_for_images_in_folder(
     num_panels = 0
     for _, image in enumerate(tqdm(load_images(input_dir), total=num_files)):
         image_name, image_ext = os.path.splitext(image.image_name)
-        panel_blocks = generate_panel_blocks(image.image, fallback=fallback, split_joint_panels=split_joint_panels, mode=mode, merge=merge)
-        for j, panel in enumerate(panel_blocks):
-            out_path = os.path.join(output_dir, f"{image_name}_{j}{image_ext}")
-            cv2.imwrite(out_path, panel)
+        panel_blocks, panel_block_bounds = generate_panel_blocks(image.image, fallback=fallback, split_joint_panels=split_joint_panels, mode=mode, merge=merge)
+        txt_out_path = os.path.join(output_dir, "labels", f"{image_name}.txt")
+        with open(txt_out_path, 'w') as f:
+            for x, y, w, h in panel_block_bounds:
+                x_center = x / image.image.shape[1]
+                y_center = y / image.image.shape[0]
+                width = w / image.image.shape[1]
+                height = h / image.image.shape[0]
+                f.write(f"0 {x_center} {y_center} {width} {height}\n")
+                # Draw rectangle on the original image
+                top_left = (int(x - w // 2), int(y - h // 2))
+                bottom_right = (int(x + w // 2), int(y + h // 2))
+                cv2.rectangle(image.image, top_left, bottom_right, (0, 255, 0), 6)
+            
+            # Save the visualization image
+            visualization_out_path = os.path.join(output_dir, "out", f"{image_name}{image_ext}")
+            cv2.imwrite(visualization_out_path, image.image)
+        # for j, panel in enumerate(panel_blocks):
+        #     image_out_path = os.path.join(output_dir, f"{image_name}_{j}{image_ext}")
+        #     cv2.imwrite(image_out_path, panel)
         num_panels += len(panel_blocks)
     return (num_files, num_panels)
 
