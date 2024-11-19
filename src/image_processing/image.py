@@ -103,3 +103,53 @@ def group_contours_horizontally(contours) -> list[list[np.ndarray]]:
         if not found_group:
             grouped_contours.append([contour])
     return grouped_contours
+
+def group_bounding_boxes_vertically(bounding_boxes) -> list[list[tuple[int, int, int, int]]]:
+    """
+    Groups the given bounding boxes vertically
+    """
+    ERROR_THRESHOLD = 0.05
+    bounding_boxes = sorted(bounding_boxes, key=lambda bb: bb[1])
+    grouped_bounding_boxes = [[bounding_boxes[0]]]
+    for bounding_box in bounding_boxes[1:]:
+        found_group = False
+        bb_x, bb_y, bb_w, bb_h = bounding_box
+        for group in grouped_bounding_boxes[::-1]:
+            group_x, group_y, group_w, group_h = group[-1]
+            y_diff = abs(bb_y - group_y) - group_h
+            if y_diff < 0 or y_diff > min(bb_h, group_h):
+                continue 
+            group_x_center = group_x + group_w / 2
+            bb_x_center = bb_x + bb_w / 2
+            if abs(group_x_center - bb_x_center) < ERROR_THRESHOLD * min(group_w, bb_w):
+                group.append(bounding_box)
+                found_group = True
+                break
+        if not found_group:
+            grouped_bounding_boxes.append([bounding_box])
+    return grouped_bounding_boxes
+
+def group_bounding_boxes_horizontally(bounding_boxes) -> list[list[tuple[int, int, int, int]]]:
+    """
+    Groups the given bounding boxes horizontally
+    """
+    ERROR_THRESHOLD = 0.05
+    bounding_boxes = sorted(bounding_boxes, key=lambda bb: bb[0])
+    grouped_bounding_boxes = [[bounding_boxes[0]]]
+    for bounding_box in bounding_boxes[1:]:
+        found_group = False
+        bb_x, bb_y, bb_w, bb_h = bounding_box
+        for group in grouped_bounding_boxes[::-1]:
+            group_x, group_y, group_w, group_h = group[-1]
+            x_diff = abs(bb_x - group_x) - group_w
+            if x_diff < 0 or x_diff > min(bb_w, group_w):
+                continue 
+            group_y_center = group_y + group_h / 2
+            bb_y_center = bb_y + bb_h / 2
+            if abs(group_y_center - bb_y_center) < ERROR_THRESHOLD * min(group_h, bb_h):
+                group.append(bounding_box)
+                found_group = True
+                break
+        if not found_group:
+            grouped_bounding_boxes.append([bounding_box])
+    return grouped_bounding_boxes

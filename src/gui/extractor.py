@@ -1,8 +1,8 @@
 import os
 import cv2
 from PyQt6.QtCore import QThread, pyqtSignal
-from myutils.myutils import load_images, ImageWithFilename
-from image_processing.panel import generate_panel_blocks, OutputMode, MergeMode
+from myutils.myutils import ImageWithFilename, load_image
+from image_processing.panel import OutputMode, MergeMode, generate_panel_blocks_by_ai
 
 class ExtractionThread(QThread):
     progress_update = pyqtSignal(int, int)
@@ -33,11 +33,8 @@ class ExtractionThread(QThread):
         def extract(image: ImageWithFilename, output_folder: str):
             image_name, image_ext = os.path.splitext(image.image_name)
             for k, panel in enumerate(
-                generate_panel_blocks(
+                generate_panel_blocks_by_ai(
                 image.image, 
-                split_joint_panels=self.split_joint_panels, 
-                fallback=self.fallback, 
-                mode=self.output_mode, 
                 merge=self.merge_mode
                 )
             ):

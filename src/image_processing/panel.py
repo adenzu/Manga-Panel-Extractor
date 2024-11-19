@@ -3,7 +3,7 @@ from typing import Callable
 import cv2
 import warnings
 import numpy as np
-from image_processing.image import is_contour_rectangular, apply_adaptive_threshold, group_contours_horizontally, group_contours_vertically, adaptive_hconcat, adaptive_vconcat
+from image_processing.image import is_contour_rectangular, apply_adaptive_threshold, group_contours_horizontally, group_contours_vertically, adaptive_hconcat, adaptive_vconcat, group_bounding_boxes_horizontally, group_bounding_boxes_vertically
 from myutils.myutils import load_images, load_image
 from tqdm import tqdm
 from image_processing.model import model
@@ -353,21 +353,42 @@ def generate_panel_blocks(
     return panels
 
 
-def generate_panel_blocks_by_ai(image: np.ndarray) -> list[np.ndarray]:
+def generate_panel_blocks_by_ai(image: np.ndarray, merge: str = MergeMode.NONE) -> list[np.ndarray]:
     """
-    Generates the separate panel images from the base image using AI
+    Generates the separate panel images from the base image using AI with merge
     """
     grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     processed_image = preprocess_image(grayscale_image)
+
+    warnings.filterwarnings("ignore", category=FutureWarning) # Ignore 'FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.'
     results = model(processed_image)
-    panels = []
+    warnings.filterwarnings("default", category=FutureWarning)
+
+    bounding_boxes = []
     for detection in results.xyxy[0]:  # Access predictions in (x1, y1, x2, y2, confidence, class) format
         x1, y1, x2, y2, conf, cls = detection.tolist()  # Convert to Python list
         x1, y1, x2, y2 = map(int, [x1, y1, x2, y2])
-        
-        # Crop the panel from the original image
-        panel = image[y1:y2, x1:x2]
-        panels.append(panel)
+        bounding_boxes.append((x1, y1, x2 - x1, y2 - y1))
+
+    def get_panels(bounding_boxes):
+        panels = []
+        for x, y, w, h in bounding_boxes:
+            panel = image[y:y + h, x:x + w]
+            panels.append(panel)
+        return panels
+
+    panels = []
+    if merge == MergeMode.NONE:
+        panels = get_panels(bounding_boxes)
+    elif merge == MergeMode.HORIZONTAL:
+        grouped_bounding_boxes = group_bounding_boxes_horizontally(bounding_boxes)
+        for group in grouped_bounding_boxes:
+            panels.append(adaptive_hconcat(get_panels(group)))
+    elif merge == MergeMode.VERTICAL:
+        grouped_bounding_boxes = group_bounding_boxes_vertically(bounding_boxes)
+        for group in grouped_bounding_boxes:
+            panels.append(adaptive_vconcat(get_panels(group)))
+
     return panels
 
 
@@ -432,7 +453,6 @@ def extract_panels_for_images_in_folder_by_ai(
     files = os.listdir(input_dir)
     num_files = len(files)
     num_panels = 0
-    warnings.filterwarnings("ignore", category=FutureWarning)
     for _, image in enumerate(tqdm(load_images(input_dir), total=num_files)):
         image_name, image_ext = os.path.splitext(image.image_name)
         panel_blocks = generate_panel_blocks_by_ai(image.image)
@@ -440,6 +460,5 @@ def extract_panels_for_images_in_folder_by_ai(
             out_path = os.path.join(output_dir, f"{image_name}_{j}{image_ext}")
             cv2.imwrite(out_path, panel)
         num_panels += len(panel_blocks)
-    warnings.filterwarnings("default", category=FutureWarning)
     return (num_files, num_panels)
 
