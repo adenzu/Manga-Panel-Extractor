@@ -44,15 +44,17 @@ class ExtractionThread(QThread):
                     out_path = os.path.join(output_folder, f"{image_name}_{k}{image_ext}")
                     cv2.imwrite(out_path, panel)
 
-        for i, image in enumerate(load_images(self.input_dir)):
+        for i, file in enumerate(files):
             if self.isInterruptionRequested():
                 return
             self.progress_update.emit(i + 1, total_files)
-            image_name, image_ext = os.path.splitext(image.image_name)
+            image_name, image_ext = os.path.splitext(file)
             output_folder = self.output_dir
             if self.output_to_folders:
                 output_folder = os.path.join(self.output_dir, image_name)
                 if not os.path.exists(output_folder):
                     os.makedirs(output_folder)
+            image = load_image(self.input_dir, file)
             extract(image, output_folder)
+
         self.process_finished.emit()
