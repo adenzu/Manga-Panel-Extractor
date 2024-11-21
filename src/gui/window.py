@@ -1,8 +1,10 @@
 import os
 from PyQt6.QtWidgets import QMainWindow, QLabel, QLineEdit, QPushButton, QCheckBox, QMessageBox, QFileDialog
-from utils.utils import get_file_names, supported_types
+from PyQt6 import QtGui
+from myutils.myutils import get_file_names, supported_types
 from gui.extractor import ExtractionThread
 from gui.base_window import Ui_MainWindow
+from myutils.respath import resource_path
 
 class MainWindowUI(Ui_MainWindow):
     def __init__(self, window: QMainWindow) -> None:
@@ -16,6 +18,8 @@ class MainWindowUI(Ui_MainWindow):
         self.output_directory_browse_button.clicked.connect(self.open_output_directory_dialog)
         self.start_button.clicked.connect(self.start_extracting)
         self.cancel_button.clicked.connect(self.cancel_extraction)
+
+        self.window.setWindowIcon(QtGui.QIcon(resource_path("icon.ico")))
         
     def open_input_directory_dialog(self):
         # Open directory selection dialog
@@ -58,11 +62,8 @@ class MainWindowUI(Ui_MainWindow):
             self.extraction_thread = ExtractionThread(
                 input_dir, 
                 output_dir, 
-                self.split_joint_panels_check_box.isChecked(), 
-                self.use_fallback_check_box.isChecked(), 
-                self.output_separate_folders_check_box.isChecked(),
-                self.output_mode_combo_box.currentIndex(),
-                self.merge_mode_combo_box.currentIndex()
+                output_to_folders=self.output_separate_folders_check_box.isChecked(),
+                merge_mode=self.merge_mode_combo_box.currentIndex()
             )
 
             self.extraction_thread.progress_update.connect(self.update_progress)

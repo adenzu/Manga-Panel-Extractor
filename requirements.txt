@@ -7,3 +7,5 @@ argparse
 dataclasses
 tqdm
 pyqt6-tools
+torch
+yolov5
