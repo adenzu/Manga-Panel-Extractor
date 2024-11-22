@@ -2,15 +2,24 @@ import sys
 import os
 import argparse
 from PyQt6.QtWidgets import QApplication, QMainWindow
-from gui.window import MainWindowUI
+from gui.base_window import MainWindow
+from gui.splash_screen import SplashScreen
 from image_processing.panel import extract_panels_for_image, extract_panels_for_images_in_folder
 
 
 def start_gui():
     app = QApplication(sys.argv)
-    window = QMainWindow()
-    ui = MainWindowUI(window)
-    window.show()
+    
+    # main_window = QMainWindow()
+    # main_gui = MainWindow(main_window)
+    # main_window.show()
+
+    splash_screen_window = QMainWindow()
+    splash_screen = SplashScreen(splash_screen_window)
+    splash_screen_window.show()
+
+    splash_screen.finished = lambda: app.closeAllWindows()
+
     sys.exit(app.exec())
 
 

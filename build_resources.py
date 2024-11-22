@@ -21,7 +21,7 @@ def convert_ui_to_py() -> None:
 
     for ui_file in ui_files:
         # Construct the destination .py file path in src/gui
-        py_file_name = os.path.splitext(os.path.basename(ui_file))[0] + ".py"
+        py_file_name = os.path.splitext(os.path.basename(ui_file))[0] + "_ui.py"
         py_file = os.path.join(py_dir, py_file_name)
         
         # Command to convert .ui to .py
