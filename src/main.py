@@ -1,7 +1,7 @@
 import sys
 import os
 import argparse
-from PyQt6.QtWidgets import QApplication, QMainWindow
+from PyQt6.QtWidgets import QApplication
 from gui.base_window import MainWindow
 from gui.splash_screen import SplashScreen
 from image_processing.panel import extract_panels_for_image, extract_panels_for_images_in_folder

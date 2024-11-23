@@ -18,15 +18,15 @@ class ProgressWorker(QThread):
 
     def run(self):
         total_progress = 100
-        simulated_waits = [(5, 25), (10, 25), (20, 25), (40, 15)]
+        simulated_waits = [(5, 25), (10, 25), (20, 25), (40, 10), (120, 5)]
         total_simulated_progress = sum([wait[1] for wait in simulated_waits])
         simulated_progress = 0
-        for wait in simulated_waits:
-            mseconds_to_wait = int(1000 * wait[0] / wait[1])
-            for i in range(simulated_progress, simulated_progress + wait[1]):
+        for seconds, progress in simulated_waits:
+            mseconds_to_wait = int(1000 * seconds / progress)
+            for i in range(simulated_progress, simulated_progress + progress):
                 self.progress_update.emit(i)  # Emit progress
                 self.msleep(10 if self.model_loaded else mseconds_to_wait)
-            simulated_progress += wait[1]
+            simulated_progress += progress
         while not self.model_loaded:
             self.sleep(1)
         for i in range(total_simulated_progress, total_progress + 1):
