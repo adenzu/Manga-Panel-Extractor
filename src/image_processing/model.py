@@ -4,14 +4,10 @@ class Model:
     def __init__(self):
         self.model = None
         self.imported = False
-        self.finished = lambda: None
     
     def load(self):
         if self.model is None:
-            self.thread = QThread()
-            self.thread.run = self.__load
-            self.thread.finished.connect(self.finished)
-            self.thread.start()
+            self.__load()
 
     def __load(self):
         if not self.imported:

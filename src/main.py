@@ -7,19 +7,20 @@ from gui.splash_screen import SplashScreen
 from image_processing.panel import extract_panels_for_image, extract_panels_for_images_in_folder
 
 
+def start_main_window():
+    main_window = MainWindow()
+    main_window.show()
+
+
+def start_splash_screen():
+    splash_screen = SplashScreen()
+    splash_screen.show()
+    splash_screen.closeEvent = lambda _: start_main_window()
+
+
 def start_gui():
     app = QApplication(sys.argv)
-    
-    # main_window = QMainWindow()
-    # main_gui = MainWindow(main_window)
-    # main_window.show()
-
-    splash_screen_window = QMainWindow()
-    splash_screen = SplashScreen(splash_screen_window)
-    splash_screen_window.show()
-
-    splash_screen.finished = lambda: app.closeAllWindows()
-
+    start_splash_screen()
     sys.exit(app.exec())
 
 

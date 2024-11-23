@@ -6,7 +6,7 @@ from gui.extractor import ExtractionThread
 from gui.base_window_ui import Ui_MainWindow
 from myutils.respath import resource_path
 
-class MainWindow(Ui_MainWindow):
+class MainWindowUI(Ui_MainWindow):
     def __init__(self, window: QMainWindow) -> None:
         super().__init__()
 
@@ -93,3 +93,9 @@ class MainWindow(Ui_MainWindow):
         self.progress_bar.setValue(100)
         self.set_status("Finished process")
         self.extraction_thread = None
+
+
+class MainWindow(QMainWindow):
+    def __init__(self) -> None:
+        super().__init__()
+        self.ui = MainWindowUI(self)
