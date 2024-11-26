@@ -2,8 +2,8 @@ import os
 from typing import Callable
 import cv2
 import numpy as np
-from image_processing.image import is_contour_rectangular, apply_adaptive_threshold, group_contours_horizontally, group_contours_vertically, adaptive_hconcat, adaptive_vconcat
-from utils.utils import load_images, load_image
+from core.image import is_contour_rectangular, apply_adaptive_threshold, group_contours_horizontally, group_contours_vertically, adaptive_hconcat, adaptive_vconcat
+from app.core.utils import load_images, load_image
 from tqdm import tqdm
 
 

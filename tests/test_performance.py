@@ -1,6 +1,6 @@
 import time
 import os
-from image_processing.panel import extract_panels_for_images_in_folder, MergeMode
+from app.core.panel import extract_panels_for_images_in_folder, MergeMode
 
 
 def run_performance_tests() -> None:

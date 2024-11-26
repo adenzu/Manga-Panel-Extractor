@@ -2,8 +2,8 @@ import sys
 import os
 import argparse
 from PyQt6.QtWidgets import QApplication, QMainWindow
-from gui.window import MainWindowUI
-from image_processing.panel import extract_panels_for_image, extract_panels_for_images_in_folder
+from app.gui.views.main_window import MainWindowUI
+from core.panel import extract_panels_for_image, extract_panels_for_images_in_folder
 
 
 def start_gui():
@@ -30,10 +30,11 @@ def make_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def handle_parameters(parser: argparse.ArgumentParser) -> None:
+def handle_parameters() -> None:
     """
     Handle the parameters passed to the program
     """
+    parser = make_parser()
     args = parser.parse_args()
 
     if len(sys.argv) == 1 or args.gui:
@@ -49,8 +50,7 @@ def handle_parameters(parser: argparse.ArgumentParser) -> None:
 
 
 def main():
-    parser = make_parser()
-    handle_parameters(parser)        
+    handle_parameters()        
 
 
 if __name__ == "__main__":
