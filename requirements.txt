@@ -3,9 +3,11 @@ opencv-contrib-python
 opencv_python_headless
 PyQt6
 PyQt6_sip
+pyqt6-tools
 argparse
 dataclasses
 tqdm
-pyqt6-tools
 torch
+torchvision 
+torchaudio
 yolov5

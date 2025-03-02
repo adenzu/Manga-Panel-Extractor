@@ -1,10 +1,9 @@
-from PyQt6.QtWidgets import QMainWindow
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6 import QtGui
-import time
-from myutils.respath import resource_path
-from gui.splash_screen_ui import Ui_SplashScreen
-from image_processing.model import model
+from PyQt6.QtCore import Qt, QThread, pyqtSignal
+from PyQt6.QtWidgets import QMainWindow
+from app.core.model import model
+from app.core.utils import resource_path
+from app.gui.resources.ui.splash_screen_ui import Ui_SplashScreen
 
 
 class ProgressWorker(QThread):
@@ -61,7 +60,9 @@ class SplashScreenUI(Ui_SplashScreen):
 
         # Initialize progress worker
         self.progress_worker = ProgressWorker(self.model_loaded)
-        self.progress_worker.progress_update.connect(lambda value: self.update_progress(value))
+        self.progress_worker.progress_update.connect(
+            lambda value: self.update_progress(value)
+        )
         self.progress_worker.completed.connect(self.window.close)
         self.progress_worker.start()
 
