@@ -2,7 +2,7 @@
 
 A simple program that takes manga pages and outputs panels on them. The current way of working of this program was inspired from this [paper](related-paper.pdf). Thanks to Xufang Pang, Ying Cao, Rynson W.H. Lau, and Antoni B. Chan for their work.
 
-Please read [report](report.pdf) for detailed explanation of the implemented algorithm(s).
+Please read [report](reports\internal\report.pdf) for detailed explanation of the implemented algorithm(s).
 
 - Please note that this program is designed specifically for manga and may not work correctly with manhwas or other similar formats.
 
@@ -23,7 +23,7 @@ Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) s
 
 ### Executable
 
-0. You can check examples in advance to see if this program can help you with your images, see examples [here](INSIGHT.md#what-it-does).
+0. You can check examples in advance to see if this program can help you with your images, see examples [here](tests\data\test_performance\README.md#what-it-does).
 1. [Download the latest executable](https://github.com/adenzu/Manga-Panel-Extractor/releases/latest) for your operating system.
 2. Execute the downloaded executable.
 3. Select the input directory containing the manga page images. Each image should represent one manga page.
@@ -57,7 +57,7 @@ python main.py [input_img_path] [-s] [-f] [-g]
 
 ## Program Explanation and Examples
 
-See explanation and examples [here](INSIGHT.md).
+See explanation and examples [here](tests\data\test_performance\README.md).
 
 ## Features
 
