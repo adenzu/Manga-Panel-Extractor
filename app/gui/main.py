@@ -3,7 +3,7 @@ import os
 import argparse
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from app.gui.views.main_window import MainWindowUI
-from core.panel import extract_panels_for_image, extract_panels_for_images_in_folder
+from app.core.panel import extract_panels_for_image, extract_panels_for_images_in_folder
 
 
 def start_gui():
