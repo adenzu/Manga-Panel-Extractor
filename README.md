@@ -12,7 +12,7 @@ Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) s
 
 ## Usage
 
-### @avans06's Website (Recommended)
+### [avan06](https://github.com/avan06)'s Website (Recommended)
 
 1. Go to the website https://huggingface.co/spaces/avans06/AdenzuMangaPanelExtractor
 2. Usage is explained through the interface
