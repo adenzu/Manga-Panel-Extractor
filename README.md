@@ -12,7 +12,12 @@ Visit the [Releases](https://github.com/adenzu/Manga-Panel-Extractor/releases) s
 
 ## Usage
 
-### Website
+### @avans06's Website (Recommended)
+
+1. Go to the website https://huggingface.co/spaces/avans06/AdenzuMangaPanelExtractor
+2. Usage is explained through the interface
+
+### My Website
 1. Go to the website https://adenzu.github.io/Manga-Panel-Extractor/
 2. Select image files of manga pages you want to extract panels of
 3. Click `Start`
